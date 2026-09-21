@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% block title %}Orders{% endblock %}
+{% block heading %}Orders{% endblock %}
+{% block content %}
+<div class="tabs">
+  <a href="{{ url_for('admin_orders') }}" class="{{ 'on' if not status }}">All</a>
+  {% for s in statuses %}<a href="{{ url_for('admin_orders', status=s) }}" class="{{ 'on' if status == s }}">{{ s }}</a>{% endfor %}
+</div>
+<form method="get" class="filters">
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <input type="search" name="q" value="{{ q }}" placeholder="Search by order no., name, phone or M-Pesa code">
+  <button class="btn" type="submit">Search</button>
+</form>
+
+{% if orders %}
+<div class="panel table-wrap">
+  <table class="tbl">
+    <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>M-Pesa</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr onclick="location.href='{{ url_for('admin_order', oid=o.id) }}'" class="click">
+        <td><a href="{{ url_for('admin_order', oid=o.id) }}"><b>{{ o.code }}</b></a></td>
+        <td>{{ o.customer_name }}<br><small class="muted">{{ o.phone }}</small></td>
+        <td><b>{{ o.total | ksh }}</b></td>
+        <td>{{ o.mpesa_code or '–' }}</td>
+        <td><span class="pill pill-{{ o.status | lower }}">{{ o.status }}</span></td>
+        <td class="muted">{{ o.created_at[:16] }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="panel empty"><p>No orders found.</p></div>
+{% endif %}
+{% endblock %}

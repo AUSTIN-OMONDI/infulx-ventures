@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% block title %}Products{% endblock %}
+{% block heading %}Products{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search products…">
+    <select name="cat" onchange="this.form.submit()">
+      <option value="">All categories</option>
+      {% for c in nav_categories %}<option value="{{ c.id }}" {{ 'selected' if cat == c.id }}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <button class="btn" type="submit">Search</button>
+  </form>
+  <a href="{{ url_for('admin_product_form') }}" class="btn btn-primary">➕ Add Product</a>
+</div>
+
+{% if products %}
+<div class="plist">
+  {% for p in products %}
+  <div class="prow">
+    <a href="{{ url_for('admin_product_form', pid=p.id) }}" class="prow-img"><img src="{{ p.image | img }}" alt="" loading="lazy"></a>
+    <div class="prow-info">
+      <a href="{{ url_for('admin_product_form', pid=p.id) }}" class="prow-name">{{ p.name }}</a>
+      <span class="muted small">{{ p.category_name or 'No category' }}</span>
+      <b class="prow-price">{{ p.price | ksh }}{% if p.old_price %} <s class="muted">{{ p.old_price | ksh }}</s>{% endif %}</b>
+    </div>
+    <div class="prow-actions">
+      <form method="post" action="{{ url_for('admin_product_toggle', pid=p.id, field='in_stock') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="chip {{ 'chip-green' if p.in_stock else 'chip-red' }}" title="Click to change">{{ 'In stock' if p.in_stock else 'Out of stock' }}</button>
+      </form>
+      <form method="post" action="{{ url_for('admin_product_toggle', pid=p.id, field='featured') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="chip {{ 'chip-gold' if p.featured else '' }}" title="Show in Hot Deals on home page">{{ '★ Hot deal' if p.featured else '☆ Hot deal' }}</button>
+      </form>
+      <a href="{{ url_for('admin_product_form', pid=p.id) }}" class="btn btn-sm">✏️ Edit</a>
+      <form method="post" action="{{ url_for('admin_product_delete', pid=p.id) }}" data-confirm="Delete “{{ p.name }}”? This cannot be undone.">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-danger">🗑</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="panel empty">
+    <p>No products found.</p>
+    <a href="{{ url_for('admin_product_form') }}" class="btn btn-primary">➕ Add your first product</a>
+  </div>
+{% endif %}
+{% endblock %}

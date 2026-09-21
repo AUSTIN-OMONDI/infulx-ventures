@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% block title %}Categories{% endblock %}
+{% block heading %}Categories{% endblock %}
+{% block content %}
+<form method="post" class="panel cat-form">
+  <h2>Add category</h2>
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="row3">
+    <label>Name<input name="name" required placeholder="e.g. Microwaves"></label>
+    <label>Emoji icon <small class="muted">optional</small><input name="icon" maxlength="4" placeholder="📦"></label>
+    <label>Order<input name="sort" type="number" value="{{ categories | length }}"></label>
+  </div>
+  <button class="btn btn-primary">➕ Add category</button>
+</form>
+
+<div class="panel">
+  <h2>Your categories</h2>
+  <p class="muted small">Edit a name and press Save. Lower “Order” numbers show first on the website.</p>
+  {% for c in categories %}
+  <div class="cat-row">
+    <form method="post" class="row3 cat-edit">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="id" value="{{ c.id }}">
+      <input name="icon" value="{{ c.icon }}" maxlength="4" class="icon-in" aria-label="Icon">
+      <input name="name" value="{{ c.name }}" required aria-label="Name">
+      <input name="sort" type="number" value="{{ c.sort }}" class="sort-in" aria-label="Order">
+      <span class="muted small nowrap">{{ c.count }} product{{ 's' if c.count != 1 }}</span>
+      <button class="btn btn-sm">Save</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_category_delete', cid=c.id) }}" data-confirm="Delete category “{{ c.name }}”? Its {{ c.count }} product(s) will stay but become uncategorised.">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-danger">🗑</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

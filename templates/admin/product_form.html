@@ -1,0 +1,110 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Edit' if p else 'Add' }} Product{% endblock %}
+{% block heading %}{{ 'Edit Product' if p else 'Add New Product' }}{% endblock %}
+{% block content %}
+{% set v = form if form else (p or {}) %}
+<form method="post" enctype="multipart/form-data" class="pform" id="pform">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+  <div class="panel">
+    <h2>1. Photos</h2>
+    {% if images %}
+      <div class="imgs">
+        {% for im in images %}
+          <div class="img-box {{ 'main' if loop.first }}">
+            <img src="{{ im.filename | img }}" alt="">
+            {% if loop.first %}<span class="img-tag">Main photo</span>{% endif %}
+            <div class="img-actions">
+              {% if not loop.first %}
+                <button class="chip" form="main{{ im.id }}">Make main</button>
+              {% endif %}
+              <button class="chip chip-red" form="del{{ im.id }}">Remove</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <label class="drop" id="drop">
+      <input type="file" name="images" id="files" accept="image/*" multiple>
+      <span class="drop-icon">📷</span>
+      <b>Tap to add photos</b>
+      <small>or drag & drop here · JPG, PNG, WEBP · you can pick several</small>
+    </label>
+    <div class="imgs" id="preview"></div>
+  </div>
+
+  <div class="panel">
+    <h2>2. Details</h2>
+    <label>Product name *
+      <input name="name" required value="{{ v.name or '' }}" placeholder="e.g. 55&quot; 4K Smart TV">
+    </label>
+    <label>Category
+      <select name="category_id">
+        <option value="">– Choose category –</option>
+        {% for c in categories %}
+          <option value="{{ c.id }}" {{ 'selected' if (v.category_id | string) == (c.id | string) }}>{{ c.icon }} {{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div class="row2">
+      <label>Price (KSh) *
+        <input name="price" type="number" min="1" step="1" inputmode="numeric" required value="{{ v.price or '' }}" placeholder="e.g. 45000">
+      </label>
+      <label>Old price (KSh) <small class="muted">optional – shows a discount</small>
+        <input name="old_price" type="number" min="0" step="1" inputmode="numeric" value="{{ v.old_price or '' }}" placeholder="e.g. 52000">
+      </label>
+    </div>
+    <label>Description
+      <textarea name="description" rows="7" placeholder="Features, size, warranty… Start a line with • for bullet points.">{{ v.description or '' }}</textarea>
+    </label>
+    <div class="switches">
+      <label class="switch"><input type="checkbox" name="in_stock" {{ 'checked' if (not p and not form) or v.in_stock }}><span></span> In stock</label>
+      <label class="switch"><input type="checkbox" name="featured" {{ 'checked' if v.featured }}><span></span> Show in “Hot Deals”</label>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    {% if p %}<a href="{{ url_for('product', slug=p.slug) }}" target="_blank" class="btn">👁 View</a>{% endif %}
+    <button type="submit" name="action" value="save_new" class="btn">Save & add another</button>
+    <button type="submit" name="action" value="save" class="btn btn-primary">💾 Save Product</button>
+  </div>
+</form>
+
+{# standalone forms for image actions (can't nest forms) #}
+{% for im in images %}
+  <form method="post" id="main{{ im.id }}" action="{{ url_for('admin_image_main', iid=im.id) }}" hidden><input type="hidden" name="_csrf" value="{{ csrf_token() }}"></form>
+  <form method="post" id="del{{ im.id }}" action="{{ url_for('admin_image_delete', iid=im.id) }}" data-confirm="Remove this photo?" hidden><input type="hidden" name="_csrf" value="{{ csrf_token() }}"></form>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var input = document.getElementById("files"), drop = document.getElementById("drop"), prev = document.getElementById("preview");
+  var dt = new DataTransfer();
+  function render() {
+    prev.innerHTML = "";
+    Array.prototype.forEach.call(dt.files, function (f, i) {
+      var box = document.createElement("div");
+      box.className = "img-box new";
+      var img = document.createElement("img");
+      img.src = URL.createObjectURL(f);
+      var rm = document.createElement("button");
+      rm.type = "button"; rm.className = "chip chip-red"; rm.textContent = "Remove";
+      rm.onclick = function () { var n = new DataTransfer(); Array.prototype.forEach.call(dt.files, function (x, j) { if (j !== i) n.items.add(x); }); dt = n; input.files = dt.files; render(); };
+      var tag = document.createElement("span"); tag.className = "img-tag new"; tag.textContent = "New";
+      var act = document.createElement("div"); act.className = "img-actions"; act.appendChild(rm);
+      box.appendChild(img); box.appendChild(tag); box.appendChild(act); prev.appendChild(box);
+    });
+  }
+  function addFiles(files) {
+    Array.prototype.forEach.call(files, function (f) { if (f.type.indexOf("image/") === 0) dt.items.add(f); });
+    input.files = dt.files; render();
+  }
+  input.addEventListener("change", function () { addFiles(Array.prototype.slice.call(input.files)); });
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { addFiles(e.dataTransfer.files); });
+})();
+</script>
+{% endblock %}

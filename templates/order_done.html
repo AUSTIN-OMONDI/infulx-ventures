@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.code }} – {{ S.store_name }}{% endblock %}
+{% block content %}
+<section class="wrap section narrow">
+  <div class="done-card">
+    <div class="done-icon">✓</div>
+    <h1>Thank you, {{ order.customer_name.split(' ')[0] }}!</h1>
+    <p>Your order <b>{{ order.code }}</b> has been received. We will call you on <b>{{ order.phone }}</b> to confirm.</p>
+
+    <table class="table">
+      {% for i in items %}
+        <tr><td>{{ i.qty }} × {{ i.name }}</td><td class="r">{{ (i.qty * i.price) | ksh }}</td></tr>
+      {% endfor %}
+      <tr class="total"><td>Total</td><td class="r"><b>{{ order.total | ksh }}</b></td></tr>
+    </table>
+
+    <div class="mpesa-head"><span class="mpesa-badge">M-PESA</span><h3>Pay {{ order.total | ksh }}</h3></div>
+    <div class="pay-box">
+      <div class="pay-row"><span>Paybill Number</span><b>{{ S.paybill }}</b><button type="button" class="copy" data-copy="{{ S.paybill }}">Copy</button></div>
+      <div class="pay-row"><span>Account Number</span><b>{{ S.account }}</b><button type="button" class="copy" data-copy="{{ S.account }}">Copy</button></div>
+      <div class="pay-row"><span>Amount</span><b>{{ order.total }}</b><button type="button" class="copy" data-copy="{{ order.total }}">Copy</button></div>
+    </div>
+
+    <a class="btn btn-wa btn-lg btn-block" href="{{ wa_link(wa_text) }}" target="_blank" rel="noopener">💬 Send order on WhatsApp</a>
+    <a class="btn btn-block" href="{{ url_for('shop') }}">Continue shopping</a>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script>Cart.clear();</script>{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_card with context %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-in">
+    <div class="hero-text">
+      <span class="eyebrow">Wholesale & Retail · Kenya</span>
+      <h1>Quality home appliances at <span class="gold">wholesale prices</span></h1>
+      <p>Woofers, TVs, dinner sets, cookware, cookers and fridges, all in one place. Order online, pay with M-Pesa and we deliver.</p>
+      <div class="hero-cta">
+        <a href="{{ url_for('shop') }}" class="btn btn-gold btn-lg">Shop Now</a>
+        <a href="{{ wa_link('Hello ' ~ S.store_name ~ ', I would like a wholesale price list.') }}" class="btn btn-outline-light btn-lg" target="_blank" rel="noopener">Get Price List</a>
+      </div>
+      <div class="hero-pay">
+        <span class="mpesa-badge">M-PESA</span>
+        Paybill <b>{{ S.paybill }}</b> · Account <b>{{ S.account }}</b>
+      </div>
+    </div>
+    <div class="hero-logo">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ S.store_name }} logo">
+    </div>
+  </div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head"><h2>Shop by Category</h2></div>
+  <div class="cat-grid">
+    {% for c in categories %}
+      <a class="cat-tile" href="{{ url_for('shop', slug=c.slug) }}">
+        <span class="cat-circle"><img src="{{ c.image | img }}" alt="" loading="lazy"></span>
+        <b>{{ c.name }}</b>
+        <small>{{ c.count }} item{{ 's' if c.count != 1 }}</small>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+{% if featured %}
+<section class="wrap section">
+  <div class="section-head"><h2>Hot Deals</h2><a href="{{ url_for('shop') }}">View all →</a></div>
+  <div class="grid">{% for p in featured %}{{ product_card(p) }}{% endfor %}</div>
+</section>
+{% endif %}
+
+<section class="wrap perks">
+  <div><span>🚚</span><b>Countrywide Delivery</b><small>Fast delivery to your door or shop</small></div>
+  <div><span>💰</span><b>Wholesale Prices</b><small>Better prices for bulk orders</small></div>
+  <div><span>📱</span><b>Pay via M-Pesa</b><small>Paybill {{ S.paybill }}, Acc {{ S.account }}</small></div>
+  <div><span>✅</span><b>Genuine Products</b><small>Quality you can trust</small></div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head"><h2>New Arrivals</h2><a href="{{ url_for('shop', sort='new') }}">View all →</a></div>
+  <div class="grid">{% for p in latest %}{{ product_card(p) }}{% endfor %}</div>
+</section>
+
+<section class="wrap cta-band">
+  <div>
+    <h2>Buying in bulk?</h2>
+    <p>Talk to us for special wholesale pricing on large orders.</p>
+  </div>
+  <div class="cta-actions">
+    <a href="tel:{{ tel(S.phone1) }}" class="btn btn-gold">📞 {{ S.phone1 }}</a>
+    {% if S.phone2 %}<a href="tel:{{ tel(S.phone2) }}" class="btn btn-outline-light">📞 {{ S.phone2 }}</a>{% endif %}
+  </div>
+</section>
+{% endblock %}

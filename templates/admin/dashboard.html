@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<div class="quick">
+  <a href="{{ url_for('admin_product_form') }}" class="quick-btn primary">➕<b>Add a Product</b><small>Photos, price & description</small></a>
+  <a href="{{ url_for('admin_orders', status='New') }}" class="quick-btn">🧾<b>New Orders</b><small>{{ stats.new_orders }} waiting</small></a>
+  <a href="{{ url_for('admin_products') }}" class="quick-btn">📦<b>Manage Products</b><small>Edit prices & stock</small></a>
+</div>
+
+<div class="stats">
+  <div class="stat"><span>Products</span><b>{{ stats.products }}</b></div>
+  <div class="stat"><span>New orders</span><b class="{{ 'hot' if stats.new_orders }}">{{ stats.new_orders }}</b></div>
+  <div class="stat"><span>All orders</span><b>{{ stats.orders }}</b></div>
+  <div class="stat"><span>Paid sales</span><b>{{ stats.sales | ksh }}</b></div>
+  <div class="stat"><span>Out of stock</span><b>{{ stats.out_of_stock }}</b></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head"><h2>Recent orders</h2><a href="{{ url_for('admin_orders') }}">All orders →</a></div>
+  {% if recent %}
+  <div class="table-wrap">
+    <table class="tbl">
+      <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for o in recent %}
+        <tr onclick="location.href='{{ url_for('admin_order', oid=o.id) }}'" class="click">
+          <td><a href="{{ url_for('admin_order', oid=o.id) }}"><b>{{ o.code }}</b></a></td>
+          <td>{{ o.customer_name }}<br><small class="muted">{{ o.phone }}</small></td>
+          <td>{{ o.total | ksh }}</td>
+          <td><span class="pill pill-{{ o.status | lower }}">{{ o.status }}</span></td>
+          <td class="muted">{{ o.created_at[:16] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">No orders yet. When customers place orders they will appear here.</p>
+  {% endif %}
+</div>
+{% endblock %}

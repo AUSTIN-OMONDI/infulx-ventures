@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_card with context %}
+{% block title %}{{ category.name if category else ('Search: ' ~ q if q else 'Shop') }} – {{ S.store_name }}{% endblock %}
+{% block content %}
+<section class="wrap section">
+  <div class="shop-head">
+    <div>
+      <h1>{% if category %}{{ category.icon }} {{ category.name }}{% elif q %}Results for “{{ q }}”{% else %}All Products{% endif %}</h1>
+      <p class="muted">{{ products | length }} product{{ 's' if products | length != 1 }}</p>
+    </div>
+    <form method="get" class="sort-form">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      <label for="sort" class="muted">Sort</label>
+      <select name="sort" id="sort" onchange="this.form.submit()">
+        <option value="">Recommended</option>
+        <option value="new" {{ 'selected' if sort == 'new' }}>Newest</option>
+        <option value="price_asc" {{ 'selected' if sort == 'price_asc' }}>Price: Low to High</option>
+        <option value="price_desc" {{ 'selected' if sort == 'price_desc' }}>Price: High to Low</option>
+      </select>
+    </form>
+  </div>
+  {% if products %}
+    <div class="grid">{% for p in products %}{{ product_card(p) }}{% endfor %}</div>
+  {% else %}
+    <div class="empty">
+      <p>No products found.</p>
+      <a class="btn btn-primary" href="{{ url_for('shop') }}">See all products</a>
+      <a class="btn btn-wa" href="{{ wa_link('Hello, do you have ' ~ (q or 'this item') ~ '?') }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Your Cart – {{ S.store_name }}{% endblock %}
+{% block content %}
+<section class="wrap section">
+  <h1>Your Cart</h1>
+  <div id="cartEmpty" class="empty" hidden>
+    <p>Your cart is empty.</p>
+    <a class="btn btn-primary" href="{{ url_for('shop') }}">Start shopping</a>
+  </div>
+  <div id="cartLoading" class="muted">Loading your cart…</div>
+
+  <div class="cart-layout" id="cartWrap" hidden>
+    <div class="cart-items" id="cartItems"></div>
+
+    <form class="checkout" method="post" action="{{ url_for('checkout') }}" id="checkoutForm">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div id="cartHidden"></div>
+      <h2>Order Summary</h2>
+      <div class="sum-row"><span>Items</span><span id="sumCount">0</span></div>
+      <div class="sum-row total"><span>Total</span><b id="sumTotal">KSh 0</b></div>
+
+      <div class="pay-box compact">
+        <div class="pay-row"><span>Paybill</span><b>{{ S.paybill }}</b><button type="button" class="copy" data-copy="{{ S.paybill }}">Copy</button></div>
+        <div class="pay-row"><span>Account</span><b>{{ S.account }}</b><button type="button" class="copy" data-copy="{{ S.account }}">Copy</button></div>
+      </div>
+
+      <h3>Delivery details</h3>
+      <label>Full name *<input name="name" required maxlength="100" autocomplete="name"></label>
+      <label>Phone number *<input name="phone" required type="tel" maxlength="30" placeholder="07XX XXX XXX" autocomplete="tel"></label>
+      <label>Delivery location<input name="location" maxlength="200" placeholder="Town, estate, building"></label>
+      <label>M-Pesa code <small class="muted">(if already paid)</small><input name="mpesa_code" maxlength="20" placeholder="e.g. SJK3ABCD12" style="text-transform:uppercase"></label>
+      <label>Notes<textarea name="notes" rows="2" maxlength="1000" placeholder="Anything we should know?"></textarea></label>
+      <button type="submit" class="btn btn-gold btn-lg btn-block">Place Order</button>
+      <p class="muted small">After placing your order you'll get payment instructions and can send the order to us on WhatsApp.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script>Cart.renderPage();</script>{% endblock %}

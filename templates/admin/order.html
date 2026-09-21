@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% block title %}Order {{ order.code }}{% endblock %}
+{% block heading %}Order {{ order.code }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_orders') }}" class="back-link">← All orders</a>
+<div class="order-grid">
+  <div class="panel">
+    <h2>Items</h2>
+    <table class="tbl">
+      <thead><tr><th>Product</th><th>Qty</th><th class="r">Price</th><th class="r">Subtotal</th></tr></thead>
+      <tbody>
+      {% for i in items %}
+        <tr>
+          <td>{% if i.product_id %}<a href="{{ url_for('admin_product_form', pid=i.product_id) }}">{{ i.name }}</a>{% else %}{{ i.name }}{% endif %}</td>
+          <td>{{ i.qty }}</td>
+          <td class="r">{{ i.price | ksh }}</td>
+          <td class="r">{{ (i.price * i.qty) | ksh }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="3"><b>Total</b></td><td class="r"><b>{{ order.total | ksh }}</b></td></tr></tfoot>
+    </table>
+    {% if order.notes %}<h3>Customer notes</h3><p class="note">{{ order.notes }}</p>{% endif %}
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>Customer</h2>
+      <dl class="dl">
+        <dt>Name</dt><dd>{{ order.customer_name }}</dd>
+        <dt>Phone</dt><dd><a href="tel:{{ tel(order.phone) }}">{{ order.phone }}</a></dd>
+        <dt>Delivery</dt><dd>{{ order.location or '–' }}</dd>
+        <dt>Placed</dt><dd>{{ order.created_at[:16] }}</dd>
+      </dl>
+      <div class="btn-row">
+        <a class="btn btn-sm" href="tel:{{ tel(order.phone) }}">📞 Call</a>
+        <a class="btn btn-sm btn-wa" target="_blank" rel="noopener"
+           href="https://wa.me/{{ wa_phone }}?text={{ ('Hello ' ~ order.customer_name ~ ', thank you for your order ' ~ order.code ~ ' from ' ~ S.store_name ~ '. Total: ' ~ (order.total | ksh) ~ '. Pay via Paybill ' ~ S.paybill ~ ', Account ' ~ S.account ~ '.') | urlencode }}">💬 WhatsApp</a>
+      </div>
+    </div>
+
+    <form method="post" class="panel">
+      <h2>Update status</h2>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label>Status
+        <select name="status">
+          {% for s in statuses %}<option {{ 'selected' if s == order.status }}>{{ s }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>M-Pesa code
+        <input name="mpesa_code" value="{{ order.mpesa_code }}" placeholder="e.g. SJK3ABCD12" style="text-transform:uppercase">
+      </label>
+      <button class="btn btn-primary btn-block">Save</button>
+    </form>
+
+    <form method="post" action="{{ url_for('admin_order_delete', oid=order.id) }}" data-confirm="Delete order {{ order.code }}?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-danger">🗑 Delete order</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

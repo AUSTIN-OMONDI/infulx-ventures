@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_card with context %}
+{% block title %}{{ p.name }} – {{ S.store_name }}{% endblock %}
+{% block content %}
+<section class="wrap section">
+  <nav class="crumbs">
+    <a href="{{ url_for('home') }}">Home</a> ›
+    {% if p.category_slug %}<a href="{{ url_for('shop', slug=p.category_slug) }}">{{ p.category_name }}</a> ›{% endif %}
+    <span>{{ p.name }}</span>
+  </nav>
+  <div class="pd">
+    <div class="pd-gallery">
+      <div class="pd-main"><img id="mainImg" src="{{ (images[0].filename if images else None) | img }}" alt="{{ p.name }}"></div>
+      {% if images | length > 1 %}
+      <div class="pd-thumbs">
+        {% for im in images %}
+          <button type="button" class="{{ 'on' if loop.first }}" data-thumb="{{ im.filename | img }}"><img src="{{ im.filename | img }}" alt="" loading="lazy"></button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="pd-info">
+      <span class="card-cat">{{ p.category_name or '' }}</span>
+      <h1>{{ p.name }}</h1>
+      <div class="price price-lg">
+        <b>{{ p.price | ksh }}</b>
+        {% if p.old_price and p.old_price > p.price %}<s>{{ p.old_price | ksh }}</s>
+          <span class="badge badge-sale static">Save {{ (p.old_price - p.price) | ksh }}</span>{% endif %}
+      </div>
+      <p class="stock {{ 'in' if p.in_stock else 'out' }}">{{ '● In stock' if p.in_stock else '● Out of stock' }}</p>
+
+      {% if p.in_stock %}
+      <div class="buy-row">
+        <div class="qty">
+          <button type="button" data-step="-1" aria-label="Decrease">−</button>
+          <input type="number" id="qty" value="1" min="1" max="10000" aria-label="Quantity">
+          <button type="button" data-step="1" aria-label="Increase">+</button>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg grow" data-add="{{ p.id }}" data-name="{{ p.name }}" data-qty-from="#qty">Add to cart</button>
+      </div>
+      <a href="{{ url_for('cart') }}" class="btn btn-gold btn-block" data-buy-now="{{ p.id }}">Buy now</a>
+      {% endif %}
+      <a class="btn btn-wa btn-block" href="{{ wa_link('Hello, I would like to order: ' ~ p.name ~ ' (' ~ (p.price | ksh) ~ '). ' ~ url_for('product', slug=p.slug, _external=True)) }}" target="_blank" rel="noopener">💬 Order on WhatsApp</a>
+
+      <div class="pd-pay">
+        <span class="mpesa-badge">M-PESA</span>
+        <div>Paybill <b>{{ S.paybill }}</b><br>Account <b>{{ S.account }}</b></div>
+        <button type="button" class="btn btn-sm" data-open-pay>How to pay</button>
+      </div>
+
+      {% if p.description %}
+      <div class="pd-desc">
+        <h3>Description</h3>
+        <p>{{ p.description | e | replace('\n', '<br>' | safe) }}</p>
+      </div>
+      {% endif %}
+      <div class="pd-contact">
+        Questions? Call <a href="tel:{{ tel(S.phone1) }}">{{ S.phone1 }}</a>{% if S.phone2 %} or <a href="tel:{{ tel(S.phone2) }}">{{ S.phone2 }}</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if related %}
+<section class="wrap section">
+  <div class="section-head"><h2>You may also like</h2></div>
+  <div class="grid">{% for r in related %}{{ product_card(r) }}{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

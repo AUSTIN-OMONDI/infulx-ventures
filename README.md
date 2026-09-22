@@ -32,9 +32,9 @@ python seed.py        # first time only – loads the product catalogue
 python app.py         # open http://localhost:5000  (admin: http://localhost:5000/admin)
 ```
 
-**Admin login:** username `admin`. On first run the password is taken from the `ADMIN_PASSWORD`
-environment variable. If that isn't set, a random password is generated, printed in the console and saved to
-`data/admin_password.txt`. You can change it any time in Admin → Settings.
+**Admin login:** username `admin`. If the `ADMIN_PASSWORD` environment variable is set (as on Render), that is
+the password; it is applied every time the site starts, so change it there. Without it, a random password is
+generated on first run, printed in the console and saved to `data/admin_password.txt`.
 
 ## Deploying
 

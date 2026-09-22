@@ -133,15 +133,20 @@ def init_db():
     db.executescript(SCHEMA)
     for k, v in DEFAULT_SETTINGS.items():
         db.execute("INSERT OR IGNORE INTO settings(key, value) VALUES (?, ?)", (k, v))
-    if not db.execute("SELECT 1 FROM admins").fetchone():
-        # First run: use ADMIN_PASSWORD if set, otherwise generate one and save it locally.
-        password = os.environ.get("ADMIN_PASSWORD")
-        if not password:
-            password = secrets.token_urlsafe(9)
-            with open(os.path.join(os.path.dirname(DB_PATH), "admin_password.txt"), "w") as f:
-                f.write(f"username: admin\npassword: {password}\n")
-            print(f" * Admin account created - username: admin, password: {password}")
-        db.execute("INSERT INTO admins(username, password_hash) VALUES (?, ?)",
+    # ADMIN_PASSWORD (e.g. set on Render) always wins: it is applied on every start,
+    # stripped of stray spaces/newlines that easily sneak into the value.
+    env_password = (os.environ.get("ADMIN_PASSWORD") or "").strip()
+    if env_password:
+        db.execute("INSERT OR IGNORE INTO admins(username, password_hash) VALUES ('admin', '')")
+        db.execute("UPDATE admins SET password_hash = ? WHERE username = 'admin'",
+                   (generate_password_hash(env_password),))
+    elif not db.execute("SELECT 1 FROM admins").fetchone():
+        # First local run without ADMIN_PASSWORD: generate one and save it next to the database.
+        password = secrets.token_urlsafe(9)
+        with open(os.path.join(os.path.dirname(DB_PATH), "admin_password.txt"), "w") as f:
+            f.write(f"username: admin\npassword: {password}\n")
+        print(f" * Admin account created - username: admin, password: {password}")
+        db.execute("INSERT OR IGNORE INTO admins(username, password_hash) VALUES (?, ?)",
                    ("admin", generate_password_hash(password)))
     db.commit()
 
@@ -407,9 +412,12 @@ def admin_required(view):
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        user = get_db().execute("SELECT * FROM admins WHERE username = ?",
+        user = get_db().execute("SELECT * FROM admins WHERE username = ? COLLATE NOCASE",
                                 (request.form.get("username", "").strip(),)).fetchone()
-        if user and check_password_hash(user["password_hash"], request.form.get("password", "")):
+        typed = request.form.get("password", "")
+        # phones often add a trailing space after autocomplete, so also try the trimmed value
+        if user and user["password_hash"] and any(
+                check_password_hash(user["password_hash"], p) for p in {typed, typed.strip()}):
             session.clear()
             session["admin_id"] = user["id"]
             session["admin_name"] = user["username"]

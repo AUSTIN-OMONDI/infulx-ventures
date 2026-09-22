@@ -133,13 +133,15 @@ def init_db():
     db.executescript(SCHEMA)
     for k, v in DEFAULT_SETTINGS.items():
         db.execute("INSERT OR IGNORE INTO settings(key, value) VALUES (?, ?)", (k, v))
-    # ADMIN_PASSWORD (e.g. set on Render) always wins: it is applied on every start,
-    # stripped of stray spaces/newlines that easily sneak into the value.
+    # ADMIN_USERNAME / ADMIN_PASSWORD (e.g. set on Render) always win: applied on every start,
+    # stripped of stray spaces/newlines, and any other admin accounts are removed.
     env_password = (os.environ.get("ADMIN_PASSWORD") or "").strip()
+    env_username = (os.environ.get("ADMIN_USERNAME") or "admin").strip() or "admin"
     if env_password:
-        db.execute("INSERT OR IGNORE INTO admins(username, password_hash) VALUES ('admin', '')")
-        db.execute("UPDATE admins SET password_hash = ? WHERE username = 'admin'",
-                   (generate_password_hash(env_password),))
+        db.execute("DELETE FROM admins WHERE username != ? COLLATE NOCASE", (env_username,))
+        db.execute("INSERT OR IGNORE INTO admins(username, password_hash) VALUES (?, '')", (env_username,))
+        db.execute("UPDATE admins SET username = ?, password_hash = ? WHERE username = ? COLLATE NOCASE",
+                   (env_username, generate_password_hash(env_password), env_username))
     elif not db.execute("SELECT 1 FROM admins").fetchone():
         # First local run without ADMIN_PASSWORD: generate one and save it next to the database.
         password = secrets.token_urlsafe(9)

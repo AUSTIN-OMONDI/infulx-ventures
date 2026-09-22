@@ -235,6 +235,13 @@ def ksh(value):
     return f"KSh {to_int(value):,}"
 
 
+@app.template_filter("features")
+def features(description, limit=3):
+    """First few non-empty description lines, without bullet marks, for product cards."""
+    lines = [ln.strip().lstrip("•-*·").strip() for ln in (description or "").splitlines()]
+    return [ln for ln in lines if ln][:limit]
+
+
 @app.template_filter("img")
 def img_url(filename):
     if not filename:

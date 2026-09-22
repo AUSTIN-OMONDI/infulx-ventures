@@ -78,7 +78,7 @@ PRODUCTS = [
     ("heater", "p23", "Macro HQ-800 Quartz Room Heater", 1100, 0,
      "• Portable 800W electric heater\n• Two heat settings\n• Tip-over protection"),
 
-    ("storage", None, "Black 5-Tier Foldable Kitchen Rack with Wheels", 5000, 0,
+    ("storage", "p16", "Black 5-Tier Foldable Kitchen Rack with Wheels", 5000, 0,
      "• Foldable, collapsible frame – saves space when not in use\n• Smooth-rolling wheels (casters)\n"
      "• Heavy-duty carbon / stainless steel frame for appliances and cookware\n"
      "• For kitchens, garages, pantries or living spaces"),

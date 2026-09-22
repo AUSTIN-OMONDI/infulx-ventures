@@ -10,6 +10,10 @@
   <div class="card-body">
     <span class="card-cat">{{ p.category_name or '' }}</span>
     <h3 class="card-title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+    {% set feats = p.description | features %}
+    {% if feats %}
+    <ul class="card-feats">{% for f in feats %}<li>{{ f }}</li>{% endfor %}</ul>
+    {% endif %}
     <div class="price">
       <b>{{ p.price | ksh }}</b>
       {% if p.old_price and p.old_price > p.price %}<s>{{ p.old_price | ksh }}</s>{% endif %}

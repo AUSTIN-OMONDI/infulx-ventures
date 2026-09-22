@@ -1,4 +1,4 @@
-"""Infulx Ventures - wholesale e-commerce store (Flask + SQLite)."""
+"""Influx Ventures - wholesale e-commerce store (Flask + SQLite)."""
 import os
 import re
 import secrets
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS admins (
 """
 
 DEFAULT_SETTINGS = {
-    "store_name": "Infulx Ventures",
+    "store_name": "Influx Ventures",
     "tagline": "Your Home. Our Passion.",
     "phone1": "0727 077 377",
     "phone2": "0740 447 389",
@@ -217,12 +217,14 @@ def product_query(where="1=1", params=(), order="p.featured DESC, p.created_at D
     return get_db().execute(sql, params).fetchall()
 
 
-def get_categories():
-    return get_db().execute("""
+def get_categories(nonempty=False):
+    """All categories with product counts; nonempty=True hides empty ones (for the storefront)."""
+    rows = get_db().execute("""
         SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id) AS count,
                (SELECT i.filename FROM products p JOIN product_images i ON i.product_id = p.id
                 WHERE p.category_id = c.id ORDER BY p.featured DESC, i.sort LIMIT 1) AS image
         FROM categories c ORDER BY c.sort, c.name""").fetchall()
+    return [c for c in rows if c["count"]] if nonempty else rows
 
 
 # --------------------------------------------------------------------------
@@ -259,7 +261,7 @@ def inject_globals():
     s = get_settings()
     return {
         "S": s,
-        "nav_categories": get_categories(),
+        "nav_categories": get_categories(nonempty=True),
         "csrf_token": csrf_token,
         "wa_link": lambda text="": f"https://wa.me/{s['whatsapp']}" + (f"?text={quote(text)}" if text else ""),
         "tel": lambda p: "+254" + re.sub(r"\D", "", p).lstrip("0")[-9:] if p else "",
@@ -275,7 +277,7 @@ def home():
     featured = product_query("p.featured = 1", limit=8)
     latest = product_query(order="p.created_at DESC, p.id DESC", limit=8)
     return render_template("index.html", featured=featured, latest=latest,
-                           categories=get_categories())
+                           categories=get_categories(nonempty=True))
 
 
 @app.route("/shop")

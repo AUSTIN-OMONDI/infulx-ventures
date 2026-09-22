@@ -1,6 +1,6 @@
-# Infulx Ventures – Online Store
+# Influx Ventures – Online Store
 
-Wholesale e-commerce site for Infulx Ventures (woofers, TVs, dinner sets, cookware, cookers, fridges).
+Wholesale e-commerce site for Influx Ventures (woofers, TVs, dinner sets, cookware, cookers, fridges).
 Built with **Python Flask + SQLite**, so there is no separate database server to set up. It works on phones and computers.
 
 ## Features
@@ -28,7 +28,7 @@ Uploaded photos are automatically resized and converted to WebP so pages load fa
 
 ```bash
 pip install -r requirements.txt
-python seed.py        # first time only – loads the 6 categories and 36 starter products
+python seed.py        # first time only – loads the product catalogue
 python app.py         # open http://localhost:5000  (admin: http://localhost:5000/admin)
 ```
 
@@ -51,7 +51,8 @@ waitress-serve --port=8000 app:app
 - Back up the `data/` folder (the database) and `static/uploads/` (product photos).
 - Optional environment variables: `SECRET_KEY`, `INFULX_DB` (database path) and `PORT`.
 
-## Note on starter images
+## Product catalogue
 
-The 36 starter product photos in `seed_images/` were collected from Pinterest as placeholders.
-They belong to their original owners. Before the site goes public, replace them with your own photos or supplier-approved photos (Admin → Products → Edit → add a photo → Make main → remove the old one).
+`python seed.py` loads the products Influx Ventures shared on WhatsApp (photos in `seed_images/`).
+`python seed.py --reset` deletes every product and loads that list again.
+Categories with no products are hidden on the website automatically; add products to them from the admin panel.

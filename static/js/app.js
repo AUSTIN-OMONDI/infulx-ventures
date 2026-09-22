@@ -1,4 +1,4 @@
-/* Infulx Ventures storefront script */
+/* Influx Ventures storefront script */
 (function () {
   "use strict";
   var KEY = "infulx_cart";

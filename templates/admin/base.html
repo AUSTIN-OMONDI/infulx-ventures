@@ -13,7 +13,7 @@
   {% set ep = request.endpoint %}
   <aside class="side" id="side">
     <a href="{{ url_for('admin_dashboard') }}" class="side-brand">
-      <img src="{{ url_for('static', filename='img/emblem.png') }}" alt=""> <span>Infulx Admin</span>
+      <img src="{{ url_for('static', filename='img/emblem.png') }}" alt=""> <span>Influx Admin</span>
     </a>
     <nav>
       <a href="{{ url_for('admin_dashboard') }}" class="{{ 'on' if ep == 'admin_dashboard' }}">🏠 Dashboard</a>

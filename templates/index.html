@@ -6,7 +6,7 @@
     <div class="hero-text">
       <span class="eyebrow">Wholesale & Retail · Kenya</span>
       <h1>Quality home appliances at <span class="gold">wholesale prices</span></h1>
-      <p>Woofers, TVs, dinner sets, cookware, cookers and fridges, all in one place. Order online, pay with M-Pesa and we deliver.</p>
+      <p>{{ categories | map(attribute='name') | join(', ') }} and more, all in one place. Order online, pay with M-Pesa and we deliver.</p>
       <div class="hero-cta">
         <a href="{{ url_for('shop') }}" class="btn btn-gold btn-lg">Shop Now</a>
         <a href="{{ wa_link('Hello ' ~ S.store_name ~ ', I would like a wholesale price list.') }}" class="btn btn-outline-light btn-lg" target="_blank" rel="noopener">Get Price List</a>

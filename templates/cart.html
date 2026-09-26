@@ -17,6 +17,17 @@
       <div id="cartHidden"></div>
       <h2>Order Summary</h2>
       <div class="sum-row"><span>Items</span><span id="sumCount">0</span></div>
+      <div class="sum-row"><span>Goods</span><span id="sumGoods">KSh 0</span></div>
+
+      <label class="zone-label">Where are we delivering? *
+        <select name="zone_id" id="zoneSelect" required>
+          <option value="">– Choose your area –</option>
+          {% for z in zones %}<option value="{{ z.id }}">{{ z.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <div class="sum-row"><span>Delivery <small id="zoneNote" class="muted"></small></span><span id="sumDelivery">–</span></div>
+      <p class="deliv-hint muted small" id="delivHint">Choose your area to see the delivery cost.</p>
+
       <div class="sum-row total"><span>Total</span><b id="sumTotal">KSh 0</b></div>
 
       <div class="pay-box compact">

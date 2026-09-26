@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+{% block title %}Delivery{% endblock %}
+{% block heading %}Delivery charges{% endblock %}
+{% block content %}
+<div class="panel">
+  <h2>How it works</h2>
+  <p class="muted small">
+    Every product is marked <b>Small</b>, <b>Medium</b> or <b>Bulky</b> (set it when you add or edit a product).
+    Each area below has a price for each size. In the cart the customer picks their area and sees the exact
+    delivery cost before paying. The biggest item pays the full rate and every extra item pays a share of its own
+    rate, so buying more does not multiply the delivery.
+    <b>Leave a rate at 0</b> when you cannot quote it online – the customer is told you will confirm on WhatsApp.
+  </p>
+</div>
+
+<div class="panel">
+  <h2>Delivery areas</h2>
+  <div class="table-wrap">
+    <table class="tbl zone-tbl">
+      <thead><tr><th>Area</th><th>Note</th><th>Small</th><th>Medium</th><th>Bulky</th><th>Order</th><th></th></tr></thead>
+      <tbody>
+      {% for z in zones %}
+        <tr>
+          <td colspan="7" class="zone-cell">
+            <form method="post" class="zone-form">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <input type="hidden" name="form" value="zone">
+              <input type="hidden" name="id" value="{{ z.id }}">
+              <input name="name" value="{{ z.name }}" required aria-label="Area name">
+              <input name="note" value="{{ z.note }}" placeholder="e.g. 1-2 days" aria-label="Note">
+              <input name="small" type="number" min="0" value="{{ z.small }}" aria-label="Small rate">
+              <input name="medium" type="number" min="0" value="{{ z.medium }}" aria-label="Medium rate">
+              <input name="bulky" type="number" min="0" value="{{ z.bulky }}" aria-label="Bulky rate">
+              <input name="sort" type="number" value="{{ z.sort }}" class="sort-in" aria-label="Order">
+              <button class="btn btn-sm btn-primary">Save</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_zone_delete', zid=z.id) }}" data-confirm="Delete the area “{{ z.name }}”?">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-danger">🗑</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form method="post" class="panel">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <input type="hidden" name="form" value="zone">
+  <h2>Add a delivery area</h2>
+  <div class="row3">
+    <label>Area name<input name="name" required placeholder="e.g. Nakuru town"></label>
+    <label>Note <small class="muted">optional</small><input name="note" placeholder="e.g. 1-2 days"></label>
+    <label>Order<input name="sort" type="number" value="{{ zones | length }}"></label>
+  </div>
+  <div class="row3">
+    {% for key, label, hint in sizes %}
+      <label>{{ label }} (KSh)<input name="{{ key }}" type="number" min="0" value="0" inputmode="numeric">
+        <small class="muted">{{ hint }}</small></label>
+    {% endfor %}
+  </div>
+  <button class="btn btn-primary">➕ Add area</button>
+</form>
+
+<form method="post" class="panel narrow-panel">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <h2>Delivery settings</h2>
+  <label>Charge for each extra item (%)
+    <input name="extra_item_percent" type="number" min="0" max="100" value="{{ S.extra_item_percent }}">
+    <small class="muted">0% = one delivery fee per order · 100% = full rate for every item</small>
+  </label>
+  <label>Message when a rate cannot be quoted
+    <textarea name="delivery_quote_note" rows="3">{{ S.delivery_quote_note }}</textarea>
+  </label>
+  <button class="btn btn-primary">💾 Save</button>
+</form>
+{% endblock %}

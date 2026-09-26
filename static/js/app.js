@@ -47,6 +47,16 @@
       var c = load(), ids = Object.keys(c);
       var loading = $("#cartLoading");
       if (!ids.length) { loading.hidden = true; $("#cartEmpty").hidden = false; $("#cartWrap").hidden = true; return; }
+      fetch("/api/delivery").then(function (r) { return r.json(); }).then(function (d) {
+        Cart.delivery = d;
+        var sel = $("#zoneSelect"), saved = null;
+        try { saved = localStorage.getItem("infulx_zone"); } catch (e) {}
+        if (sel && saved) sel.value = saved;
+        if (sel) sel.onchange = function () {
+          try { localStorage.setItem("infulx_zone", sel.value); } catch (e) {}
+          if (Cart._last) Cart._draw(Cart._last);
+        };
+      }).catch(function () {});
       fetch("/api/products?ids=" + ids.join(","))
         .then(function (r) { return r.json(); })
         .then(function (products) {
@@ -61,7 +71,30 @@
         .catch(function () { loading.textContent = "Could not load your cart. Please refresh the page."; });
     },
 
+    /* same rule as the server: biggest item pays full delivery, extras pay a share */
+    _fee: function (list, counts) {
+      var d = Cart.delivery, sel = $("#zoneSelect");
+      if (!d || !sel || !sel.value) return { state: "none" };
+      var zone = d.zones.filter(function (z) { return String(z.id) === String(sel.value); })[0];
+      if (!zone) return { state: "none" };
+      var rates = [];
+      for (var i = 0; i < list.length; i++) {
+        var p = list[i];
+        if (!p.in_stock) continue;
+        var size = (p.size === "small" || p.size === "bulky") ? p.size : "medium";
+        var rate = zone[size];
+        if (!rate) return { state: "quote", zone: zone, note: d.quote_note };  // 0 = confirm on WhatsApp
+        for (var q = 0; q < counts[p.id]; q++) rates.push(rate);
+      }
+      if (!rates.length) return { state: "none" };
+      rates.sort(function (a, b) { return b - a; });
+      var fee = rates[0];
+      for (var k = 1; k < rates.length; k++) fee += Math.round(rates[k] * d.extra_item_percent / 100);
+      return { state: "fee", fee: fee, zone: zone, extra: rates.length > 1 ? d.extra_item_percent : 0 };
+    },
+
     _draw: function (products) {
+      Cart._last = products;
       var c = load();
       var list = products.filter(function (p) { return c[p.id]; });
       if (!list.length) { $("#cartEmpty").hidden = false; $("#cartWrap").hidden = true; return; }
@@ -85,7 +118,24 @@
       $("#cartItems").innerHTML = html;
       $("#cartHidden").innerHTML = hidden;
       $("#sumCount").textContent = count;
-      $("#sumTotal").textContent = money(total);
+      if ($("#sumGoods")) $("#sumGoods").textContent = money(total);
+
+      var d = Cart._fee(list, c), grand = total, note = "", shown = "–";
+      if (d.state === "fee") {
+        grand = total + d.fee; shown = money(d.fee);
+        note = d.zone.note ? "· " + esc(d.zone.note) : "";
+        $("#delivHint").innerHTML = d.extra
+          ? "Largest item at full rate, each extra item at " + d.extra + "%."
+          : "Delivered to " + esc(d.zone.name) + ".";
+      } else if (d.state === "quote") {
+        shown = "To confirm";
+        $("#delivHint").innerHTML = esc(d.note || "We confirm the delivery cost on WhatsApp before you pay.");
+      } else {
+        $("#delivHint").textContent = "Choose your area to see the delivery cost.";
+      }
+      if ($("#sumDelivery")) $("#sumDelivery").textContent = shown;
+      if ($("#zoneNote")) $("#zoneNote").innerHTML = note;
+      $("#sumTotal").textContent = money(grand) + (d.state === "quote" ? " + delivery" : "");
 
       var redraw = function () { Cart._draw(products); };
       $$("[data-cq]").forEach(function (b) {
@@ -137,6 +187,8 @@
     }
     if (e.target.closest("[data-open-pay]")) { $("#payModal").hidden = false; return; }
     if (e.target.closest("[data-close-pay]") || e.target.id === "payModal") { $("#payModal").hidden = true; return; }
+    if (e.target.closest("[data-open-deliv]")) { $("#delivModal").hidden = false; return; }
+    if (e.target.closest("[data-close-deliv]") || e.target.id === "delivModal") { $("#delivModal").hidden = true; return; }
     var th = e.target.closest("[data-thumb]");
     if (th) {
       $("#mainImg").src = th.dataset.thumb;
@@ -145,7 +197,10 @@
   });
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && $("#payModal")) $("#payModal").hidden = true;
+    if (e.key === "Escape") {
+      if ($("#payModal")) $("#payModal").hidden = true;
+      if ($("#delivModal")) $("#delivModal").hidden = true;
+    }
   });
 
   updateCount();

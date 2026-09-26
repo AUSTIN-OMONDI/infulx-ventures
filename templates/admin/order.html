@@ -18,7 +18,13 @@
         </tr>
       {% endfor %}
       </tbody>
-      <tfoot><tr><td colspan="3"><b>Total</b></td><td class="r"><b>{{ order.total | ksh }}</b></td></tr></tfoot>
+      <tfoot>
+        {% if order.delivery_zone %}
+          <tr><td colspan="3">Delivery – {{ order.delivery_zone }}</td>
+              <td class="r">{{ order.delivery_fee | ksh if order.delivery_fee else 'to confirm' }}</td></tr>
+        {% endif %}
+        <tr><td colspan="3"><b>Total</b></td><td class="r"><b>{{ order.total | ksh }}</b></td></tr>
+      </tfoot>
     </table>
     {% if order.notes %}<h3>Customer notes</h3><p class="note">{{ order.notes }}</p>{% endif %}
   </div>

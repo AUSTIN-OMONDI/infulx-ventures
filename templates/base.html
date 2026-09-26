@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=asset_v('css/style.css')) }}">
 </head>
 <body>
   <div class="topbar">
@@ -120,8 +120,34 @@
     </div>
   </div>
 
+  <!-- Delivery rates -->
+  <div class="modal" id="delivModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="delivTitle">
+      <button type="button" class="modal-x" data-close-deliv aria-label="Close">×</button>
+      <h3 id="delivTitle">🚚 Delivery charges</h3>
+      <p class="muted small">You pay full delivery for the largest item only; every extra item is charged less.</p>
+      <div class="table-scroll">
+        <table class="deliv-table">
+          <thead><tr><th>Area</th><th>Small</th><th>Medium</th><th>Bulky</th></tr></thead>
+          <tbody>
+            {% for z in zones %}
+              <tr>
+                <td>{{ z.name }}{% if z.note %}<br><small class="muted">{{ z.note }}</small>{% endif %}</td>
+                <td>{{ z.small | ksh if z.small else '—' }}</td>
+                <td>{{ z.medium | ksh if z.medium else '—' }}</td>
+                <td>{{ z.bulky | ksh if z.bulky else 'On WhatsApp' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">Where a rate shows “On WhatsApp”, we deliver to your nearest courier or bus stage and confirm the cost before you pay.</p>
+      <a class="btn btn-wa btn-block" href="{{ wa_link('Hello ' ~ S.store_name ~ ', how much is delivery to my area?') }}" target="_blank" rel="noopener">Ask about delivery on WhatsApp</a>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v=asset_v('js/app.js')) }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

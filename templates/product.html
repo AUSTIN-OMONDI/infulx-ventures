@@ -42,6 +42,14 @@
       {% endif %}
       <a class="btn btn-wa btn-block" href="{{ wa_link('Hello, I would like to order: ' ~ p.name ~ ' (' ~ (p.price | ksh) ~ '). ' ~ url_for('product', slug=p.slug, _external=True)) }}" target="_blank" rel="noopener">💬 Order on WhatsApp</a>
 
+      <button type="button" class="pd-deliv" data-open-deliv>
+        <span class="pd-deliv-ico">🚚</span>
+        <span>
+          {% if from_fee %}Delivery from <b>{{ from_fee | ksh }}</b>{% else %}Delivery charged by area{% endif %}
+          <small class="muted">{{ size_labels.get(p.size_class or 'medium') }} item · <u>see all delivery rates</u></small>
+        </span>
+      </button>
+
       <div class="pd-pay">
         <span class="mpesa-badge">M-PESA</span>
         <div>Paybill <b>{{ S.paybill }}</b><br>Account <b>{{ S.account }}</b></div>

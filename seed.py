@@ -92,6 +92,11 @@ def reset_products(db):
     db.execute("DELETE FROM product_images")
 
 
+# category key -> delivery size; a few products override it by name
+SIZES = {"washing": "bulky", "hair": "small", "fryer": "medium", "heater": "medium", "storage": "bulky"}
+SIZE_OVERRIDES = {"Equator Salon Standing Hair Dryer": "bulky", "Wall-Mounted Salon Hood Dryer": "bulky"}
+
+
 def seed(reset=False):
     with app.app_context():
         db = get_db()
@@ -112,9 +117,10 @@ def seed(reset=False):
                                           (name, unique_slug("categories", name), icon, sort)).lastrowid
         # newest first on the site = reverse insert order, so insert the list backwards
         for key, img, name, price, featured, desc in reversed(PRODUCTS):
-            pid = db.execute("""INSERT INTO products(name, slug, category_id, price, description, featured)
-                                VALUES (?,?,?,?,?,?)""",
-                             (name, unique_slug("products", name), cat_ids[key], price, desc, featured)).lastrowid
+            size = SIZE_OVERRIDES.get(name, SIZES.get(key, "medium"))
+            pid = db.execute("""INSERT INTO products(name, slug, category_id, price, description, featured, size_class)
+                                VALUES (?,?,?,?,?,?,?)""",
+                             (name, unique_slug("products", name), cat_ids[key], price, desc, featured, size)).lastrowid
             src = os.path.join(HERE, "seed_images", f"{img}.webp") if img else None
             if src and os.path.exists(src):
                 fname = f"{uuid.uuid4().hex[:16]}.webp"

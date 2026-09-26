@@ -11,6 +11,10 @@
       {% for i in items %}
         <tr><td>{{ i.qty }} × {{ i.name }}</td><td class="r">{{ (i.qty * i.price) | ksh }}</td></tr>
       {% endfor %}
+      {% if order.delivery_zone %}
+        <tr><td>Delivery – {{ order.delivery_zone }}</td>
+            <td class="r">{{ order.delivery_fee | ksh if order.delivery_fee else 'to confirm' }}</td></tr>
+      {% endif %}
       <tr class="total"><td>Total</td><td class="r"><b>{{ order.total | ksh }}</b></td></tr>
     </table>
 

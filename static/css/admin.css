@@ -180,3 +180,11 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); o
   .imgs { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .filters input, .filters select { min-width: 0; flex-basis: 100%; }
 }
+
+/* Delivery zones */
+.zone-cell { padding: 10px 8px !important; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.zone-form { display: flex; gap: 8px; align-items: center; flex: 1; flex-wrap: wrap; margin: 0; }
+.zone-form input { margin: 0; width: auto; flex: 1; min-width: 90px; }
+.zone-form input[name="name"] { flex: 3; min-width: 160px; }
+.zone-form input[name="note"] { flex: 2; min-width: 120px; }
+.zone-tbl thead { display: none; }

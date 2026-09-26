@@ -7,7 +7,7 @@
   <title>{% block title %}Admin{% endblock %} – {{ S.store_name }}</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css', v=asset_v('css/admin.css')) }}">
 </head>
 <body>
   {% set ep = request.endpoint %}
@@ -21,6 +21,7 @@
       <a href="{{ url_for('admin_products') }}" class="{{ 'on' if ep == 'admin_products' or (ep == 'admin_product_form' and p) }}">📦 Products</a>
       <a href="{{ url_for('admin_orders') }}" class="{{ 'on' if ep in ('admin_orders', 'admin_order') }}">🧾 Orders</a>
       <a href="{{ url_for('admin_categories') }}" class="{{ 'on' if ep == 'admin_categories' }}">🗂️ Categories</a>
+      <a href="{{ url_for('admin_delivery') }}" class="{{ 'on' if ep == 'admin_delivery' }}">🚚 Delivery</a>
       <a href="{{ url_for('admin_settings') }}" class="{{ 'on' if ep == 'admin_settings' }}">⚙️ Settings</a>
       <hr>
       <a href="{{ url_for('home') }}" target="_blank">🌐 View Website</a>

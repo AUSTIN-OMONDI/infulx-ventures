@@ -24,7 +24,7 @@
           <option value="">– Choose your area –</option>
           {% for road, list in zones_by_road.items() %}
             <optgroup label="{{ road }}">
-              {% for z in list %}<option value="{{ z.id }}">{{ z.name }}{% if z.small %} – {{ z.small | ksh }}{% endif %}</option>{% endfor %}
+              {% for z in list %}<option value="{{ z.id }}">{{ z.name }}{% if z.price %} – {{ z.price | ksh }}{% endif %}</option>{% endfor %}
             </optgroup>
           {% endfor %}
         </select>

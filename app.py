@@ -97,10 +97,9 @@ CREATE TABLE IF NOT EXISTS admins (
 CREATE TABLE IF NOT EXISTS delivery_zones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    road TEXT DEFAULT '',
     note TEXT DEFAULT '',
-    small INTEGER DEFAULT 0,
-    medium INTEGER DEFAULT 0,
-    bulky INTEGER DEFAULT 0,
+    price INTEGER DEFAULT 0,
     sort INTEGER DEFAULT 0
 );
 """
@@ -109,14 +108,9 @@ CREATE TABLE IF NOT EXISTS delivery_zones (
 MIGRATIONS = {
     "products": [("size_class", "TEXT DEFAULT 'medium'")],
     "orders": [("delivery_zone", "TEXT DEFAULT ''"), ("delivery_fee", "INTEGER DEFAULT 0")],
-    "delivery_zones": [("road", "TEXT DEFAULT ''")],
+    "delivery_zones": [("road", "TEXT DEFAULT ''"), ("price", "INTEGER DEFAULT 0")],
 }
 
-SIZE_CLASSES = [
-    ("small", "Small", "Hot combs, straighteners, blow dryers"),
-    ("medium", "Medium", "Fryers, heaters, racks"),
-    ("bulky", "Bulky", "Washing machines, fridges, cookers"),
-]
 
 # Delivery price list (courier rates with KSh 100 handling already added).
 # A rate of 0 means we cannot quote it online - the customer is told we confirm on WhatsApp.
@@ -199,7 +193,6 @@ DEFAULT_SETTINGS = {
     "email": "",
     "location": "Nairobi, Kenya",
     "delivery_note": "Countrywide delivery available. Wholesale prices for bulk orders.",
-    "extra_item_percent": "50",
     "delivery_quote_note": "We will send you the delivery cost on WhatsApp before you pay. "
                            "Delivery is to your nearest courier office or bus stage.",
 }
@@ -330,8 +323,8 @@ def load_zones(db):
     """Replace all delivery areas with the price list in DEFAULT_ZONES."""
     db.execute("DELETE FROM delivery_zones")
     for sort, (road, name, price) in enumerate(DEFAULT_ZONES):
-        db.execute("""INSERT INTO delivery_zones(road, name, note, small, medium, bulky, sort)
-                      VALUES (?,?,'',?,?,?,?)""", (road, name, price, price, price, sort))
+        db.execute("INSERT INTO delivery_zones(road, name, note, price, sort) VALUES (?,?,'',?,?)",
+                   (road, name, price, sort))
 
 
 def get_zones():
@@ -345,25 +338,16 @@ def zones_by_road():
     return grouped
 
 
-def delivery_quote(zone, items):
-    """Delivery cost for one order.
+def delivery_quote(zone, items=None):
+    """Delivery cost for one order: the price of the area the customer picked.
 
-    items: list of (size_class, qty). The biggest item pays the full rate and every other
-    item pays a share of its own rate (extra_item_percent, 50% by default), so buying more
-    never multiplies the delivery cost. A zone rate of 0 means we cannot quote it online.
+    A zone price of 0 means the area is not in the price list, so the seller quotes it.
     """
-    if not zone or not items:
-        return {"fee": 0, "quote": False, "zone": zone["name"] if zone else ""}
-    rates = []
-    for size, qty in items:
-        rate = zone[size if size in ("small", "medium", "bulky") else "medium"]
-        if not rate:
-            return {"fee": 0, "quote": True, "zone": zone["name"]}
-        rates += [rate] * max(1, int(qty))
-    rates.sort(reverse=True)
-    pct = to_int(get_settings().get("extra_item_percent"), 50)
-    fee = rates[0] + sum(round(r * pct / 100) for r in rates[1:])
-    return {"fee": int(fee), "quote": False, "zone": zone["name"]}
+    if not zone:
+        return {"fee": 0, "quote": False, "zone": ""}
+    if not zone["price"]:
+        return {"fee": 0, "quote": True, "zone": zone["name"]}
+    return {"fee": int(zone["price"]), "quote": False, "zone": zone["name"]}
 
 
 def get_categories(nonempty=False):
@@ -433,7 +417,6 @@ def inject_globals():
         "asset_v": asset_v,
         "zones": get_zones(),
         "zones_by_road": zones_by_road(),
-        "size_labels": {k: label for k, label, _ in SIZE_CLASSES},
     }
 
 
@@ -478,11 +461,9 @@ def product(slug):
     images = get_db().execute("SELECT * FROM product_images WHERE product_id = ? ORDER BY sort, id",
                               (p["id"],)).fetchall()
     related = product_query("p.category_id = ? AND p.id != ?", (p["category_id"], p["id"]), limit=4)
-    zones = get_zones()
-    size = p["size_class"] or "medium"
-    rates = [z[size] for z in zones if z[size]]
+    rates = [z["price"] for z in get_zones() if z["price"]]
     return render_template("product.html", p=p, images=images, related=related,
-                           from_fee=min(rates) if rates else 0, any_quote=any(not z[size] for z in zones))
+                           from_fee=min(rates) if rates else 0)
 
 
 @app.route("/cart")
@@ -500,7 +481,6 @@ def api_products():
     return jsonify([{
         "id": r["id"], "name": r["name"], "price": r["price"], "in_stock": bool(r["in_stock"]),
         "image": img_url(r["image"]), "url": url_for("product", slug=r["slug"]),
-        "size": r["size_class"] or "medium",
     } for r in rows])
 
 
@@ -508,10 +488,9 @@ def api_products():
 def api_delivery():
     """Zone rates, so the cart can show the delivery cost before the order is placed."""
     return jsonify({
-        "extra_item_percent": to_int(get_settings().get("extra_item_percent"), 50),
         "quote_note": get_settings().get("delivery_quote_note", ""),
-        "zones": [{"id": z["id"], "name": z["name"], "note": z["note"],
-                   "small": z["small"], "medium": z["medium"], "bulky": z["bulky"]} for z in get_zones()],
+        "zones": [{"id": z["id"], "name": z["name"], "note": z["note"], "price": z["price"]}
+                  for z in get_zones()],
     })
 
 
@@ -532,7 +511,7 @@ def checkout():
     db = get_db()
     marks = ",".join("?" * len(items))
     products = db.execute(
-        f"SELECT id, name, price, size_class FROM products WHERE id IN ({marks}) AND in_stock = 1",
+        f"SELECT id, name, price FROM products WHERE id IN ({marks}) AND in_stock = 1",
         list(items)).fetchall()
     if not products:
         flash("The items in your cart are no longer available.", "error")
@@ -541,7 +520,7 @@ def checkout():
 
     # delivery is worked out here, never taken from the browser
     zone = db.execute("SELECT * FROM delivery_zones WHERE id = ?", (to_int(f.get("zone_id")),)).fetchone()
-    quote = delivery_quote(zone, [(p["size_class"] or "medium", items[p["id"]]) for p in products])
+    quote = delivery_quote(zone)
     total = goods + quote["fee"]
 
     code = "INF" + datetime.now().strftime("%y%m%d") + secrets.token_hex(2).upper()
@@ -666,17 +645,16 @@ def admin_product_form(pid=None):
             flash("Product name and a price above 0 are required.", "error")
         else:
             old_price = to_int(f.get("old_price")) or None
-            size = f.get("size_class") if f.get("size_class") in dict((k, 1) for k, _, _ in SIZE_CLASSES) else "medium"
             data = (name, to_int(f.get("category_id")) or None, price, old_price,
                     f.get("description", "").strip(), 1 if f.get("in_stock") else 0,
-                    1 if f.get("featured") else 0, size)
+                    1 if f.get("featured") else 0)
             if p:
                 db.execute("""UPDATE products SET name=?, category_id=?, price=?, old_price=?, description=?,
-                              in_stock=?, featured=?, size_class=?, slug=? WHERE id=?""",
+                              in_stock=?, featured=?, slug=? WHERE id=?""",
                            data + (unique_slug("products", name, pid), pid))
             else:
                 cur = db.execute("""INSERT INTO products(name, category_id, price, old_price, description,
-                                    in_stock, featured, size_class, slug) VALUES (?,?,?,?,?,?,?,?,?)""",
+                                    in_stock, featured, slug) VALUES (?,?,?,?,?,?,?,?)""",
                                  data + (unique_slug("products", name),))
                 pid = cur.lastrowid
             start = db.execute("SELECT COALESCE(MAX(sort), -1) + 1 FROM product_images WHERE product_id = ?",
@@ -700,7 +678,7 @@ def admin_product_form(pid=None):
             return redirect(url_for("admin_product_form", pid=pid))
     images = db.execute("SELECT * FROM product_images WHERE product_id = ? ORDER BY sort, id",
                         (pid,)).fetchall() if pid else []
-    return render_template("admin/product_form.html", p=p, images=images, sizes=SIZE_CLASSES,
+    return render_template("admin/product_form.html", p=p, images=images,
                            categories=get_categories(), form=request.form)
 
 
@@ -798,29 +776,25 @@ def admin_delivery():
         if f.get("form") == "zone":
             name = f.get("name", "").strip()
             zid = to_int(f.get("id"))
-            rates = (f.get("road", "").strip()[:60], f.get("note", "").strip()[:120], to_int(f.get("small")),
-                     to_int(f.get("medium")), to_int(f.get("bulky")), to_int(f.get("sort")))
+            rates = (f.get("road", "").strip()[:60], f.get("note", "").strip()[:120],
+                     to_int(f.get("price")), to_int(f.get("sort")))
             if not name:
                 flash("Area name is required.", "error")
             elif zid:
-                db.execute("""UPDATE delivery_zones SET name=?, road=?, note=?, small=?, medium=?, bulky=?,
-                              sort=? WHERE id=?""", (name,) + rates + (zid,))
+                db.execute("UPDATE delivery_zones SET name=?, road=?, note=?, price=?, sort=? WHERE id=?",
+                           (name,) + rates + (zid,))
                 flash("Delivery area updated.", "success")
             else:
-                db.execute("""INSERT INTO delivery_zones(name, road, note, small, medium, bulky, sort)
-                              VALUES (?,?,?,?,?,?,?)""", (name,) + rates)
+                db.execute("INSERT INTO delivery_zones(name, road, note, price, sort) VALUES (?,?,?,?,?)",
+                           (name,) + rates)
                 flash("Delivery area added.", "success")
         else:
-            db.execute("INSERT OR REPLACE INTO settings(key, value) VALUES ('extra_item_percent', ?)",
-                       (str(max(0, min(to_int(f.get("extra_item_percent"), 50), 100))),))
             db.execute("INSERT OR REPLACE INTO settings(key, value) VALUES ('delivery_quote_note', ?)",
                        (f.get("delivery_quote_note", "").strip()[:300],))
             flash("Delivery settings saved.", "success")
         db.commit()
         return redirect(url_for("admin_delivery"))
-    example = db.execute("SELECT name, price, size_class FROM products ORDER BY price DESC LIMIT 1").fetchone()
-    return render_template("admin/delivery.html", zones=get_zones(), grouped=zones_by_road(),
-                           sizes=SIZE_CLASSES, example=example)
+    return render_template("admin/delivery.html", zones=get_zones(), grouped=zones_by_road())
 
 
 @app.route("/admin/delivery/<int:zid>/delete", methods=["POST"])

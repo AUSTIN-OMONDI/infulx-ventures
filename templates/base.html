@@ -125,7 +125,7 @@
     <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="delivTitle">
       <button type="button" class="modal-x" data-close-deliv aria-label="Close">×</button>
       <h3 id="delivTitle">🚚 Delivery charges</h3>
-      <p class="muted small">Charges are per delivery. The largest item pays the full rate and every extra item is charged less.</p>
+      <p class="muted small">One delivery charge per order, based on the area you choose in the cart.</p>
       <input type="search" id="delivSearch" placeholder="Type your area, e.g. Kasarani" aria-label="Search your area">
       <div class="deliv-list" id="delivList">
         {% for road, list in zones_by_road.items() %}
@@ -133,7 +133,7 @@
             <h4>{{ road }}</h4>
             {% for z in list %}
               <div class="deliv-row" data-area="{{ (z.name ~ ' ' ~ road) | lower }}">
-                <span>{{ z.name }}</span><b>{{ z.small | ksh if z.small else 'On WhatsApp' }}</b>
+                <span>{{ z.name }}</span><b>{{ z.price | ksh if z.price else 'We quote you' }}</b>
               </div>
             {% endfor %}
           </div>

@@ -71,26 +71,14 @@
         .catch(function () { loading.textContent = "Could not load your cart. Please refresh the page."; });
     },
 
-    /* same rule as the server: biggest item pays full delivery, extras pay a share */
-    _fee: function (list, counts) {
+    /* same as the server: one delivery charge, the price of the chosen area */
+    _fee: function () {
       var d = Cart.delivery, sel = $("#zoneSelect");
       if (!d || !sel || !sel.value) return { state: "none" };
       var zone = d.zones.filter(function (z) { return String(z.id) === String(sel.value); })[0];
       if (!zone) return { state: "none" };
-      var rates = [];
-      for (var i = 0; i < list.length; i++) {
-        var p = list[i];
-        if (!p.in_stock) continue;
-        var size = (p.size === "small" || p.size === "bulky") ? p.size : "medium";
-        var rate = zone[size];
-        if (!rate) return { state: "quote", zone: zone, note: d.quote_note };  // 0 = confirm on WhatsApp
-        for (var q = 0; q < counts[p.id]; q++) rates.push(rate);
-      }
-      if (!rates.length) return { state: "none" };
-      rates.sort(function (a, b) { return b - a; });
-      var fee = rates[0];
-      for (var k = 1; k < rates.length; k++) fee += Math.round(rates[k] * d.extra_item_percent / 100);
-      return { state: "fee", fee: fee, zone: zone, extra: rates.length > 1 ? d.extra_item_percent : 0 };
+      if (!zone.price) return { state: "quote", zone: zone, note: d.quote_note };
+      return { state: "fee", fee: zone.price, zone: zone };
     },
 
     _draw: function (products) {
@@ -120,13 +108,11 @@
       $("#sumCount").textContent = count;
       if ($("#sumGoods")) $("#sumGoods").textContent = money(total);
 
-      var d = Cart._fee(list, c), grand = total, note = "", shown = "–";
+      var d = Cart._fee(), grand = total, note = "", shown = "–";
       if (d.state === "fee") {
         grand = total + d.fee; shown = money(d.fee);
         note = d.zone.note ? "· " + esc(d.zone.note) : "";
-        $("#delivHint").innerHTML = d.extra
-          ? "Largest item at full rate, each extra item at " + d.extra + "%."
-          : "Delivered to " + esc(d.zone.name) + ".";
+        $("#delivHint").innerHTML = "Delivered to " + esc(d.zone.name) + ". One charge per order.";
       } else if (d.state === "quote") {
         shown = "To confirm";
         $("#delivHint").innerHTML = esc(d.note || "We confirm the delivery cost on WhatsApp before you pay.");

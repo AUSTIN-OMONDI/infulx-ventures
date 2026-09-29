@@ -185,7 +185,7 @@ DEFAULT_ZONES = [
 
     ("Lower Kabete", "Spring Valley", 450), ("Lower Kabete", "KSG", 600),
 
-    ("Outside Nairobi", "Another town - courier or bus (we confirm the cost)", 0),
+    ("Outside Nairobi", "My area is not on the list - please quote me", 0),
 ]
 
 DEFAULT_SETTINGS = {
@@ -200,8 +200,8 @@ DEFAULT_SETTINGS = {
     "location": "Nairobi, Kenya",
     "delivery_note": "Countrywide delivery available. Wholesale prices for bulk orders.",
     "extra_item_percent": "50",
-    "delivery_quote_note": "For this item we deliver to your nearest courier or bus stage. "
-                           "We confirm the exact delivery cost on WhatsApp before you pay.",
+    "delivery_quote_note": "We will send you the delivery cost on WhatsApp before you pay. "
+                           "Delivery is to your nearest courier office or bus stage.",
 }
 
 ORDER_STATUSES = ["New", "Paid", "Processing", "Delivered", "Cancelled"]

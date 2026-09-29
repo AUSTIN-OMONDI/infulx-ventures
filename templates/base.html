@@ -125,23 +125,21 @@
     <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="delivTitle">
       <button type="button" class="modal-x" data-close-deliv aria-label="Close">×</button>
       <h3 id="delivTitle">🚚 Delivery charges</h3>
-      <p class="muted small">You pay full delivery for the largest item only; every extra item is charged less.</p>
-      <div class="table-scroll">
-        <table class="deliv-table">
-          <thead><tr><th>Area</th><th>Small</th><th>Medium</th><th>Bulky</th></tr></thead>
-          <tbody>
-            {% for z in zones %}
-              <tr>
-                <td>{{ z.name }}{% if z.note %}<br><small class="muted">{{ z.note }}</small>{% endif %}</td>
-                <td>{{ z.small | ksh if z.small else '—' }}</td>
-                <td>{{ z.medium | ksh if z.medium else '—' }}</td>
-                <td>{{ z.bulky | ksh if z.bulky else 'On WhatsApp' }}</td>
-              </tr>
+      <p class="muted small">Charges are per delivery. The largest item pays the full rate and every extra item is charged less.</p>
+      <input type="search" id="delivSearch" placeholder="Type your area, e.g. Kasarani" aria-label="Search your area">
+      <div class="deliv-list" id="delivList">
+        {% for road, list in zones_by_road.items() %}
+          <div class="deliv-road" data-road="{{ road }}">
+            <h4>{{ road }}</h4>
+            {% for z in list %}
+              <div class="deliv-row" data-area="{{ (z.name ~ ' ' ~ road) | lower }}">
+                <span>{{ z.name }}</span><b>{{ z.small | ksh if z.small else 'On WhatsApp' }}</b>
+              </div>
             {% endfor %}
-          </tbody>
-        </table>
+          </div>
+        {% endfor %}
       </div>
-      <p class="muted small">Where a rate shows “On WhatsApp”, we deliver to your nearest courier or bus stage and confirm the cost before you pay.</p>
+      <p class="muted small" id="delivNone" hidden>No area found. Ask us on WhatsApp and we will confirm the cost.</p>
       <a class="btn btn-wa btn-block" href="{{ wa_link('Hello ' ~ S.store_name ~ ', how much is delivery to my area?') }}" target="_blank" rel="noopener">Ask about delivery on WhatsApp</a>
     </div>
   </div>

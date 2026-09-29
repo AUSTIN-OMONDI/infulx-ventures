@@ -10,6 +10,7 @@
     delivery cost before paying. The biggest item pays the full rate and every extra item pays a share of its own
     rate, so buying more does not multiply the delivery.
     <b>Leave a rate at 0</b> when you cannot quote it online – the customer is told you will confirm on WhatsApp.
+    The rates below come from the courier price list with KSh 100 added to every area.
   </p>
 </div>
 
@@ -17,7 +18,7 @@
   <h2>Delivery areas</h2>
   <div class="table-wrap">
     <table class="tbl zone-tbl">
-      <thead><tr><th>Area</th><th>Note</th><th>Small</th><th>Medium</th><th>Bulky</th><th>Order</th><th></th></tr></thead>
+      <thead><tr><th>Area</th><th>Road</th><th>Small</th><th>Medium</th><th>Bulky</th><th>Order</th><th></th></tr></thead>
       <tbody>
       {% for z in zones %}
         <tr>
@@ -27,7 +28,8 @@
               <input type="hidden" name="form" value="zone">
               <input type="hidden" name="id" value="{{ z.id }}">
               <input name="name" value="{{ z.name }}" required aria-label="Area name">
-              <input name="note" value="{{ z.note }}" placeholder="e.g. 1-2 days" aria-label="Note">
+              <input name="road" value="{{ z.road }}" placeholder="Road / group" aria-label="Road">
+              <input name="note" value="{{ z.note }}" placeholder="e.g. 1-2 days" aria-label="Note" class="sort-in">
               <input name="small" type="number" min="0" value="{{ z.small }}" aria-label="Small rate">
               <input name="medium" type="number" min="0" value="{{ z.medium }}" aria-label="Medium rate">
               <input name="bulky" type="number" min="0" value="{{ z.bulky }}" aria-label="Bulky rate">
@@ -52,7 +54,7 @@
   <h2>Add a delivery area</h2>
   <div class="row3">
     <label>Area name<input name="name" required placeholder="e.g. Nakuru town"></label>
-    <label>Note <small class="muted">optional</small><input name="note" placeholder="e.g. 1-2 days"></label>
+    <label>Road / group<input name="road" placeholder="e.g. Thika Road"></label>
     <label>Order<input name="sort" type="number" value="{{ zones | length }}"></label>
   </div>
   <div class="row3">

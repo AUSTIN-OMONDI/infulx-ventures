@@ -312,3 +312,11 @@ select, input, textarea { font: inherit; }
 .deliv-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .deliv-table td { padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .deliv-table td:first-child { white-space: normal; }
+
+.deliv-list { max-height: 45vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; margin: 8px 0; }
+.deliv-road h4 { margin: 10px 0 4px; font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; color: var(--primary); }
+.deliv-row { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: .88rem; }
+.deliv-row:last-child { border-bottom: 0; }
+.deliv-row b { white-space: nowrap; }
+#delivSearch { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+#delivSearch:focus { outline: 2px solid var(--primary); outline-offset: -1px; }

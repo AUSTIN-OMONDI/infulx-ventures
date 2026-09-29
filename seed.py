@@ -13,6 +13,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 # (key, name, emoji) - categories without products are hidden on the website
 CATEGORIES = [
+    ("xmas", "Christmas Trees", "🎄"),
     ("washing", "Washing Machines", "🧺"),
     ("hair", "Hair Care & Salon", "💇"),
     ("fryer", "Deep Fryers", "🍟"),
@@ -28,6 +29,19 @@ CATEGORIES = [
 
 # (category key, image file or None, name, price, featured, description)
 PRODUCTS = [
+    ("xmas", "p25-tree", "Cypress Artificial Christmas Tree 4ft (120cm)", 1600, 1,
+     "Cypress artificial Christmas tree - xmas decoration tree.\n"
+     "• Durable PVC foliage with a sturdy fold-out base\n• Rich green pine needles\n• Height: 4ft (120cm)"),
+    ("xmas", "p25-tree", "Cypress Artificial Christmas Tree 5ft (150cm)", 3000, 1,
+     "Cypress artificial Christmas tree - xmas decoration tree.\n"
+     "• Durable PVC foliage with a sturdy fold-out base\n• Rich green pine needles\n• Height: 5ft (150cm)"),
+    ("xmas", "p25-tree", "Cypress Artificial Christmas Tree 6ft (180cm)", 4000, 1,
+     "Cypress artificial Christmas tree - xmas decoration tree.\n"
+     "• Durable PVC foliage with a sturdy fold-out base\n• Rich green pine needles\n• Height: 6ft (180cm)"),
+    ("xmas", "p25-tree", "Cypress Artificial Christmas Tree 7ft (210cm)", 4800, 0,
+     "Cypress artificial Christmas tree - xmas decoration tree.\n"
+     "• Durable PVC foliage with a sturdy fold-out base\n• Rich green pine needles\n• Height: 7ft (210cm)"),
+
     ("washing", "p03", "TCL 10KG Wash & Dry Front Load Washing Machine (C510WDG)", 59000, 1,
      "• 10KG wash capacity, 7KG dry capacity\n• Fully automatic front load\n• Smart DD inverter motor, 1400 RPM spin\n"
      "• Wi-Fi connectivity\n• JetBubble technology, Auto Dose\n• Steam Care, Allergy Care, Air Wash & Air Refresh\n"
@@ -93,8 +107,8 @@ def reset_products(db):
 
 
 # category key -> delivery size; a few products override it by name
-SIZES = {"washing": "bulky", "hair": "small", "fryer": "medium", "heater": "medium", "storage": "bulky"}
-SIZE_OVERRIDES = {"Equator Salon Standing Hair Dryer": "bulky", "Wall-Mounted Salon Hood Dryer": "bulky"}
+SIZES = {"xmas": "bulky", "washing": "bulky", "hair": "small", "fryer": "medium", "heater": "medium", "storage": "bulky"}
+SIZE_OVERRIDES = {"Cypress Artificial Christmas Tree 4ft (120cm)": "medium", "Equator Salon Standing Hair Dryer": "bulky", "Wall-Mounted Salon Hood Dryer": "bulky"}
 
 
 def seed(reset=False):

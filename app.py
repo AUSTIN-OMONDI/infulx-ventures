@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS delivery_zones (
 MIGRATIONS = {
     "products": [("size_class", "TEXT DEFAULT 'medium'")],
     "orders": [("delivery_zone", "TEXT DEFAULT ''"), ("delivery_fee", "INTEGER DEFAULT 0")],
+    "delivery_zones": [("road", "TEXT DEFAULT ''")],
 }
 
 SIZE_CLASSES = [
@@ -117,12 +118,74 @@ SIZE_CLASSES = [
     ("bulky", "Bulky", "Washing machines, fridges, cookers"),
 ]
 
-# a zone rate of 0 means: we cannot quote it online, confirm on WhatsApp
+# Delivery price list (courier rates with KSh 100 handling already added).
+# A rate of 0 means we cannot quote it online - the customer is told we confirm on WhatsApp.
+# (road, area name, price)
 DEFAULT_ZONES = [
-    ("Nairobi CBD & nearby", "Same-day delivery", 200, 400, 1500),
-    ("Greater Nairobi (Ruiru, Rongai, Roysambu)", "1 day", 300, 600, 2000),
-    ("Major towns (courier / parcel)", "1-2 days", 400, 800, 0),
-    ("Rest of Kenya", "2-3 days", 500, 1000, 0),
+    ("Waiyaki Way", "Westlands", 400), ("Waiyaki Way", "Parklands", 400), ("Waiyaki Way", "Ngara", 400),
+    ("Waiyaki Way", "Chiromo", 400), ("Waiyaki Way", "Riverside", 400), ("Waiyaki Way", "ABC", 400),
+    ("Waiyaki Way", "Deloitte", 400), ("Waiyaki Way", "Waruku", 400), ("Waiyaki Way", "Loresho", 500),
+    ("Waiyaki Way", "Mountain View", 500), ("Waiyaki Way", "Kangemi", 500), ("Waiyaki Way", "Uthiru", 500),
+    ("Waiyaki Way", "Kinoo", 500), ("Waiyaki Way", "87", 500), ("Waiyaki Way", "Muthiga", 600),
+    ("Waiyaki Way", "Regen", 600), ("Waiyaki Way", "Kikuyu", 800),
+
+    ("Peponi Road", "Kitisuru", 500), ("Peponi Road", "New Kitisuru", 500), ("Peponi Road", "Mwimuto", 600),
+
+    ("Ngong Road", "Valley Road", 400), ("Ngong Road", "Dennis Pritt Road", 400), ("Ngong Road", "KNH", 400),
+    ("Ngong Road", "Hurlingham", 400), ("Ngong Road", "Yaya", 400), ("Ngong Road", "Kilimani", 400),
+    ("Ngong Road", "Kileleshwa", 400), ("Ngong Road", "Lavington", 400), ("Ngong Road", "Hatheru Road", 400),
+    ("Ngong Road", "Lavington Mall", 400), ("Ngong Road", "Riara Road", 400), ("Ngong Road", "Adams", 400),
+    ("Ngong Road", "Prestige", 400), ("Ngong Road", "Junction", 400), ("Ngong Road", "Dagoretti Corner", 400),
+    ("Ngong Road", "Show Ground", 400), ("Ngong Road", "Race Course", 400), ("Ngong Road", "Lenana", 500),
+    ("Ngong Road", "Karen Centre", 500), ("Ngong Road", "Dagoretti Market", 700), ("Ngong Road", "Hardy", 600),
+    ("Ngong Road", "Ngong", 800),
+
+    ("Thika Road", "Pangani", 400), ("Thika Road", "Eastleigh", 400), ("Thika Road", "Utalii / KCA", 400),
+    ("Thika Road", "Alsops / Mathare", 400), ("Thika Road", "Baba Dogo", 400),
+    ("Thika Road", "Kariobangi North", 400), ("Thika Road", "Garden City", 400), ("Thika Road", "TRM", 400),
+    ("Thika Road", "Mirema / Zimmerman", 400), ("Thika Road", "Jacaranda", 450),
+    ("Thika Road", "Kahawa Wendani", 500), ("Thika Road", "Kahawa West", 450),
+    ("Thika Road", "Kahawa Sukari", 500), ("Thika Road", "Kasarani ICIPE", 400),
+    ("Thika Road", "Kasarani Equity", 400), ("Thika Road", "Kasarani Seasons", 450),
+    ("Thika Road", "Githurai 44/45", 450), ("Thika Road", "Bypass", 600), ("Thika Road", "Gwa Kairu", 600),
+    ("Thika Road", "Membley", 600),
+
+    ("Limuru Road", "Parklands", 400), ("Limuru Road", "Muthaiga", 400), ("Limuru Road", "Muthaiga North", 400),
+    ("Limuru Road", "Karura", 400), ("Limuru Road", "UNEP / Gigiri", 500), ("Limuru Road", "Village Market", 500),
+    ("Limuru Road", "Runda", 500), ("Limuru Road", "Two Rivers", 500), ("Limuru Road", "Ruaka", 500),
+    ("Limuru Road", "Muchatha", 600),
+
+    ("Kiambu Road", "DCI", 400), ("Kiambu Road", "Whiskey River", 400), ("Kiambu Road", "Ridgeways", 400),
+    ("Kiambu Road", "Ciata Mall", 400), ("Kiambu Road", "Four Ways", 400), ("Kiambu Road", "Thindigua", 500),
+    ("Kiambu Road", "Kiambu Town", 500), ("Kiambu Road", "Edenville", 500), ("Kiambu Road", "KIST", 600),
+
+    ("Langata Road", "Nairobi West", 400), ("Langata Road", "South C", 400), ("Langata Road", "Madaraka", 400),
+    ("Langata Road", "Highrise", 400), ("Langata Road", "T-Mall", 400), ("Langata Road", "Ngumo", 400),
+    ("Langata Road", "NHC", 400), ("Langata Road", "Bomas", 500), ("Langata Road", "Carnivore", 400),
+
+    ("Magadi Road", "CUEA", 550), ("Magadi Road", "JKUAT Karen", 600), ("Magadi Road", "Rongai (MMU)", 600),
+    ("Magadi Road", "Rongai (Nazarene)", 600), ("Magadi Road", "Rongai", 700),
+    ("Magadi Road", "Rongai Acacia", 800),
+
+    ("Mombasa Road", "Industrial Area", 400), ("Mombasa Road", "South B", 400),
+    ("Mombasa Road", "Capital Centre", 400), ("Mombasa Road", "Nextgen Mall", 400),
+    ("Mombasa Road", "Sameer Mall", 400), ("Mombasa Road", "Imara Daima", 450),
+    ("Mombasa Road", "Cabanas", 450), ("Mombasa Road", "Pipeline", 450), ("Mombasa Road", "Gateway Mall", 600),
+    ("Mombasa Road", "Syokimau / Katani Road", 600), ("Mombasa Road", "Mlolongo", 800),
+    ("Mombasa Road", "Athi River", 900), ("Mombasa Road", "Kitengela Eastmart", 900),
+
+    ("Jogoo Road", "Buruburu Phase 1, 2", 400), ("Jogoo Road", "Buruburu Phase 3, 4, 5", 400),
+    ("Jogoo Road", "Donholm", 400), ("Jogoo Road", "Umoja", 400), ("Jogoo Road", "Dandora", 400),
+    ("Jogoo Road", "Manyanja Road", 400), ("Jogoo Road", "Kayole / Komarock", 400), ("Jogoo Road", "Fedha", 400),
+    ("Jogoo Road", "Nyayo Gate A, D", 600), ("Jogoo Road", "Nyayo Gate B", 500),
+    ("Jogoo Road", "Embakasi Estate", 500), ("Jogoo Road", "75", 500), ("Jogoo Road", "Utawala Astrol", 600),
+    ("Jogoo Road", "Utawala Lexo", 700),
+
+    ("Kangundo Road", "Saika", 500), ("Kangundo Road", "Chokaa", 500), ("Kangundo Road", "Ruai", 700),
+
+    ("Lower Kabete", "Spring Valley", 450), ("Lower Kabete", "KSG", 600),
+
+    ("Outside Nairobi", "Another town - courier or bus (we confirm the cost)", 0),
 ]
 
 DEFAULT_SETTINGS = {
@@ -169,9 +232,7 @@ def init_db():
             if name not in existing:
                 db.execute(f"ALTER TABLE {table} ADD COLUMN {name} {spec}")
     if not db.execute("SELECT 1 FROM delivery_zones").fetchone():
-        for sort, (name, note, small, medium, bulky) in enumerate(DEFAULT_ZONES):
-            db.execute("INSERT INTO delivery_zones(name, note, small, medium, bulky, sort) VALUES (?,?,?,?,?,?)",
-                       (name, note, small, medium, bulky, sort))
+        load_zones(db)
     for k, v in DEFAULT_SETTINGS.items():
         db.execute("INSERT OR IGNORE INTO settings(key, value) VALUES (?, ?)", (k, v))
     # ADMIN_USERNAME / ADMIN_PASSWORD (e.g. set on Render) always win: applied on every start,
@@ -265,8 +326,23 @@ def product_query(where="1=1", params=(), order="p.featured DESC, p.created_at D
     return get_db().execute(sql, params).fetchall()
 
 
+def load_zones(db):
+    """Replace all delivery areas with the price list in DEFAULT_ZONES."""
+    db.execute("DELETE FROM delivery_zones")
+    for sort, (road, name, price) in enumerate(DEFAULT_ZONES):
+        db.execute("""INSERT INTO delivery_zones(road, name, note, small, medium, bulky, sort)
+                      VALUES (?,?,'',?,?,?,?)""", (road, name, price, price, price, sort))
+
+
 def get_zones():
     return get_db().execute("SELECT * FROM delivery_zones ORDER BY sort, id").fetchall()
+
+
+def zones_by_road():
+    grouped = {}
+    for z in get_zones():
+        grouped.setdefault(z["road"] or "Other areas", []).append(z)
+    return grouped
 
 
 def delivery_quote(zone, items):
@@ -356,6 +432,7 @@ def inject_globals():
         "year": datetime.now().year,
         "asset_v": asset_v,
         "zones": get_zones(),
+        "zones_by_road": zones_by_road(),
         "size_labels": {k: label for k, label, _ in SIZE_CLASSES},
     }
 
@@ -721,17 +798,17 @@ def admin_delivery():
         if f.get("form") == "zone":
             name = f.get("name", "").strip()
             zid = to_int(f.get("id"))
-            rates = (f.get("note", "").strip()[:120], to_int(f.get("small")), to_int(f.get("medium")),
-                     to_int(f.get("bulky")), to_int(f.get("sort")))
+            rates = (f.get("road", "").strip()[:60], f.get("note", "").strip()[:120], to_int(f.get("small")),
+                     to_int(f.get("medium")), to_int(f.get("bulky")), to_int(f.get("sort")))
             if not name:
                 flash("Area name is required.", "error")
             elif zid:
-                db.execute("UPDATE delivery_zones SET name=?, note=?, small=?, medium=?, bulky=?, sort=? WHERE id=?",
-                           (name,) + rates + (zid,))
+                db.execute("""UPDATE delivery_zones SET name=?, road=?, note=?, small=?, medium=?, bulky=?,
+                              sort=? WHERE id=?""", (name,) + rates + (zid,))
                 flash("Delivery area updated.", "success")
             else:
-                db.execute("INSERT INTO delivery_zones(name, note, small, medium, bulky, sort) VALUES (?,?,?,?,?,?)",
-                           (name,) + rates)
+                db.execute("""INSERT INTO delivery_zones(name, road, note, small, medium, bulky, sort)
+                              VALUES (?,?,?,?,?,?,?)""", (name,) + rates)
                 flash("Delivery area added.", "success")
         else:
             db.execute("INSERT OR REPLACE INTO settings(key, value) VALUES ('extra_item_percent', ?)",
@@ -742,7 +819,8 @@ def admin_delivery():
         db.commit()
         return redirect(url_for("admin_delivery"))
     example = db.execute("SELECT name, price, size_class FROM products ORDER BY price DESC LIMIT 1").fetchone()
-    return render_template("admin/delivery.html", zones=get_zones(), sizes=SIZE_CLASSES, example=example)
+    return render_template("admin/delivery.html", zones=get_zones(), grouped=zones_by_road(),
+                           sizes=SIZE_CLASSES, example=example)
 
 
 @app.route("/admin/delivery/<int:zid>/delete", methods=["POST"])

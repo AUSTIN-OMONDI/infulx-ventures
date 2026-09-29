@@ -203,5 +203,24 @@
     }
   });
 
+  /* search inside the delivery rates list */
+  var ds = $("#delivSearch");
+  if (ds) {
+    ds.addEventListener("input", function () {
+      var q = ds.value.trim().toLowerCase(), any = false;
+      $$("#delivList .deliv-road").forEach(function (road) {
+        var shown = 0;
+        $$(".deliv-row", road).forEach(function (row) {
+          var hit = !q || row.dataset.area.indexOf(q) !== -1;
+          row.hidden = !hit;
+          if (hit) shown++;
+        });
+        road.hidden = shown === 0;
+        if (shown) any = true;
+      });
+      $("#delivNone").hidden = any;
+    });
+  }
+
   updateCount();
 })();

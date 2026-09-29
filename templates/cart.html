@@ -22,7 +22,11 @@
       <label class="zone-label">Where are we delivering? *
         <select name="zone_id" id="zoneSelect" required>
           <option value="">– Choose your area –</option>
-          {% for z in zones %}<option value="{{ z.id }}">{{ z.name }}</option>{% endfor %}
+          {% for road, list in zones_by_road.items() %}
+            <optgroup label="{{ road }}">
+              {% for z in list %}<option value="{{ z.id }}">{{ z.name }}{% if z.small %} – {{ z.small | ksh }}{% endif %}</option>{% endfor %}
+            </optgroup>
+          {% endfor %}
         </select>
       </label>
       <div class="sum-row"><span>Delivery <small id="zoneNote" class="muted"></small></span><span id="sumDelivery">–</span></div>

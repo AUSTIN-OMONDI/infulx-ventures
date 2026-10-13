@@ -42,6 +42,33 @@ PRODUCTS = [
      "Cypress artificial Christmas tree - xmas decoration tree.\n"
      "• Durable PVC foliage with a sturdy fold-out base\n• Rich green pine needles\n• Height: 7ft (210cm)"),
 
+    ("tv", "tv32smart", "Skyworth 32\" Smart TV", 17000, 0,
+     "• 32-inch HD smart TV\n• Google TV with Netflix, YouTube and Google Play\n• Boundless screen design\n• Dolby Audio\n• End month offer"),
+    ("tv", "tv43qled2k", "Skyworth 43\" 2K QLED Google TV", 25000, 1,
+     "• 43-inch 2K QLED+ panel\n• Google TV - Netflix, YouTube, Prime Video, Disney+\n• EyeCare, flicker free\n• Find-my-remote\n• End month offer"),
+    ("tv", "tv43smart4k", "Skyworth 43\" 4K Smart TV", 28500, 0,
+     "• 43-inch 4K Ultra HD\n• Smart TV with Google TV apps\n• HDR picture\n• End month offer"),
+    ("tv", "tv50qled2k", "Skyworth 50\" 2K QLED Google TV", 32000, 1,
+     "• 50-inch 2K QLED panel\n• Google TV\n• Dolby Audio\n• World Cup promotion price"),
+    ("tv", "tv50qled4k", "Skyworth 50\" 4K QLED Google TV", 37500, 0,
+     "• 50-inch 4K QLED+ panel\n• Prolonged vivid colours, EyeCare\n• Google TV\n• End month offer"),
+    ("tv", "tv55smart", "Skyworth 55\" Smart TV", 40500, 0,
+     "• 55-inch smart TV\n• Google TV apps - Netflix, YouTube, Prime Video\n• End month offer"),
+    ("tv", "tv55qled", "Skyworth 55\" QLED Google TV", 41500, 1,
+     "• 55-inch QLED+ panel\n• EyeCare, 120Hz turbo mode\n• dbx-tv sound\n• Google TV\n• End month offer"),
+    ("tv", "tv60qled", "Skyworth 60\" QLED Google TV", 51000, 0,
+     "• 60-inch QLED panel\n• Google TV\n• Big-screen viewing for the living room\n• End month offer"),
+    ("tv", "tv65smart4k", "Skyworth 65\" 4K Smart TV", 61000, 0,
+     "• 65-inch 4K Ultra HD\n• Google TV apps\n• End month offer"),
+    ("tv", "tv65qled", "Skyworth 65\" QLED Google TV", 69000, 0,
+     "• 65-inch QLED panel\n• Chameleon picture engine\n• Dolby audio\n• Google TV\n• End month offer"),
+    ("tv", "tv75qled", "Skyworth 75\" QLED Google TV", 116000, 0,
+     "• 75-inch QLED+ panel\n• Cinema-size screen\n• Google TV with Netflix and YouTube\n• End month offer"),
+    ("tv", "tv55mini", "Skyworth 55\" Mini-QLED Google TV", 50000, 1,
+     "• 55-inch Mini-QLED panel\n• Deeper contrast and brighter highlights\n• Google TV\n• World Cup promotion price"),
+    ("tv", "tv65mini", "Skyworth 65\" Mini-QLED Google TV", 76000, 0,
+     "• 65-inch Mini-QLED panel\n• Premium picture quality\n• Google TV\n• End month offer"),
+
     ("washing", "p03", "TCL 10KG Wash & Dry Front Load Washing Machine (C510WDG)", 59000, 1,
      "• 10KG wash capacity, 7KG dry capacity\n• Fully automatic front load\n• Smart DD inverter motor, 1400 RPM spin\n"
      "• Wi-Fi connectivity\n• JetBubble technology, Auto Dose\n• Steam Care, Allergy Care, Air Wash & Air Refresh\n"

@@ -21,7 +21,6 @@
     </div>
     <div class="pd-info">
       <span class="card-cat">{{ p.category_name or '' }}</span>
-      {% if p.badge %}<span class="tag-pill">{{ p.badge }}</span>{% endif %}
       <h1>{{ p.name }}</h1>
       <div class="price price-lg">
         <b>{{ p.price | ksh }}</b>
@@ -43,19 +42,6 @@
       {% endif %}
       <a class="btn btn-wa btn-block" href="{{ wa_link('Hello, I would like to order: ' ~ p.name ~ ' (' ~ (p.price | ksh) ~ '). ' ~ url_for('product', slug=p.slug, _external=True)) }}" target="_blank" rel="noopener">💬 Order on WhatsApp</a>
 
-      <ul class="trust">
-        <li>✅ Genuine products{% if S.warranty_note %} · {{ S.warranty_note }}{% endif %}</li>
-        <li>🚚 Countrywide delivery · pay by M-Pesa</li>
-        <li>📞 Call us to confirm stock before you pay</li>
-      </ul>
-
-      {% if S.wholesale_note %}
-      <a class="wholesale" href="{{ wa_link('Hello ' ~ S.store_name ~ ', what is your wholesale price for ' ~ p.name ~ '?') }}" target="_blank" rel="noopener">
-        <b>🤝 {{ S.wholesale_note }}</b>
-        <small>Tap to ask on WhatsApp</small>
-      </a>
-      {% endif %}
-
       <button type="button" class="pd-deliv" data-open-deliv>
         <span class="pd-deliv-ico">🚚</span>
         <span>
@@ -70,15 +56,6 @@
         <button type="button" class="btn btn-sm" data-open-pay>How to pay</button>
       </div>
 
-      {% if specs %}
-      <div class="pd-specs">
-        <h3>Key specifications</h3>
-        <table>
-          {% for label, value in specs %}<tr><td>{{ label }}</td><td><b>{{ value }}</b></td></tr>{% endfor %}
-        </table>
-      </div>
-      {% endif %}
-
       {% if p.description %}
       <div class="pd-desc">
         <h3>Description</h3>
@@ -92,27 +69,10 @@
   </div>
 </section>
 
-{% if cheaper %}
-<section class="wrap section">
-  <div class="section-head"><h2>Spending less? These cost under {{ p.price | ksh }}</h2></div>
-  <div class="grid">{% for r in cheaper %}{{ product_card(r) }}{% endfor %}</div>
-</section>
-{% endif %}
-
 {% if related %}
 <section class="wrap section">
   <div class="section-head"><h2>You may also like</h2></div>
   <div class="grid">{% for r in related %}{{ product_card(r) }}{% endfor %}</div>
 </section>
-{% endif %}
-{% endblock %}
-
-{% block sticky %}
-{% if p.in_stock %}
-<div class="buybar">
-  <div class="buybar-price"><b>{{ p.price | ksh }}</b><small>{{ p.name | truncate(28) }}</small></div>
-  <a class="btn btn-wa btn-sm" href="{{ wa_link('Hello, I would like to order: ' ~ p.name ~ ' (' ~ (p.price | ksh) ~ ')') }}" target="_blank" rel="noopener">WhatsApp</a>
-  <button type="button" class="btn btn-primary btn-sm" data-add="{{ p.id }}" data-name="{{ p.name }}">Add to cart</button>
-</div>
 {% endif %}
 {% endblock %}

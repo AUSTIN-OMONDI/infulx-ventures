@@ -5,8 +5,7 @@
     {% if p.old_price and p.old_price > p.price %}
       <span class="badge badge-sale">-{{ ((1 - p.price / p.old_price) * 100) | round | int }}%</span>
     {% endif %}
-    {% if not p.in_stock %}<span class="badge badge-out">Out of stock</span>
-    {% elif p.badge %}<span class="badge badge-tag">{{ p.badge }}</span>{% endif %}
+    {% if not p.in_stock %}<span class="badge badge-out">Out of stock</span>{% endif %}
   </a>
   <div class="card-body">
     <span class="card-cat">{{ p.category_name or '' }}</span>

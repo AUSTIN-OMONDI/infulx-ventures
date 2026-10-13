@@ -19,45 +19,6 @@
       </select>
     </form>
   </div>
-  {% if brands or sizes %}
-  <div class="filters-bar">
-    {% set args = {'slug': category.slug} if category else {} %}
-    {% if brands %}
-    <div class="filter-row">
-      <span class="filter-label">Brand</span>
-      <a href="{{ url_for(request.endpoint, q=q, sort=sort, size=size, budget=budget, **args) }}"
-         class="chip-f {{ 'on' if not brand }}">All</a>
-      {% for b in brands %}
-        <a href="{{ url_for(request.endpoint, q=q, sort=sort, size=size, budget=budget, brand=b, **args) }}"
-           class="chip-f {{ 'on' if brand == b }}">{{ b }}</a>
-      {% endfor %}
-    </div>
-    {% endif %}
-    {% if sizes %}
-    <div class="filter-row">
-      <span class="filter-label">Size</span>
-      <a href="{{ url_for(request.endpoint, q=q, sort=sort, brand=brand, budget=budget, **args) }}"
-         class="chip-f {{ 'on' if not size }}">All</a>
-      {% for sz in sizes %}
-        <a href="{{ url_for(request.endpoint, q=q, sort=sort, brand=brand, budget=budget, size=sz, **args) }}"
-           class="chip-f {{ 'on' if size == sz }}">{{ sz }}"</a>
-      {% endfor %}
-    </div>
-    {% endif %}
-    <div class="filter-row">
-      <span class="filter-label">Budget</span>
-      <a href="{{ url_for(request.endpoint, q=q, sort=sort, brand=brand, size=size, **args) }}"
-         class="chip-f {{ 'on' if not budget }}">Any</a>
-      <a href="{{ url_for(request.endpoint, q=q, sort=sort, brand=brand, size=size, budget='low', **args) }}"
-         class="chip-f {{ 'on' if budget == 'low' }}">Under KSh 25,000</a>
-      <a href="{{ url_for(request.endpoint, q=q, sort=sort, brand=brand, size=size, budget='mid', **args) }}"
-         class="chip-f {{ 'on' if budget == 'mid' }}">KSh 25,000 - 60,000</a>
-      <a href="{{ url_for(request.endpoint, q=q, sort=sort, brand=brand, size=size, budget='high', **args) }}"
-         class="chip-f {{ 'on' if budget == 'high' }}">Above KSh 60,000</a>
-    </div>
-  </div>
-  {% endif %}
-
   {% if products %}
     <div class="grid">{% for p in products %}{{ product_card(p) }}{% endfor %}</div>
   {% else %}

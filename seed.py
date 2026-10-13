@@ -219,9 +219,18 @@ def seed(reset=False):
                                           (name, unique_slug("categories", name), icon, sort)).lastrowid
         # newest first on the site = reverse insert order, so insert the list backwards
         for key, img, name, price, featured, desc in reversed(PRODUCTS):
-            pid = db.execute("""INSERT INTO products(name, slug, category_id, price, description, featured)
-                                VALUES (?,?,?,?,?,?)""",
-                             (name, unique_slug("products", name), cat_ids[key], price, desc, featured)).lastrowid
+            # badge straight from the supplier's own wording, nothing invented
+            badge = ""
+            if "World Cup promotion" in desc or desc.startswith("🔥 Offer"):
+                badge = "Offer"
+            elif name.endswith("- NEW"):
+                badge = "New arrival"
+            elif "Price down" in desc:
+                badge = "Offer"
+            pid = db.execute("""INSERT INTO products(name, slug, category_id, price, description, featured, badge)
+                                VALUES (?,?,?,?,?,?,?)""",
+                             (name, unique_slug("products", name), cat_ids[key], price, desc, featured,
+                              badge)).lastrowid
             src = os.path.join(HERE, "seed_images", f"{img}.webp") if img else None
             if src and os.path.exists(src):
                 fname = f"{uuid.uuid4().hex[:16]}.webp"

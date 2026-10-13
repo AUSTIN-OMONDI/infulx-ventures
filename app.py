@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS delivery_zones (
 
 # extra columns added to older databases on start
 MIGRATIONS = {
-    "products": [("size_class", "TEXT DEFAULT 'medium'")],
+    "products": [("size_class", "TEXT DEFAULT 'medium'"), ("badge", "TEXT DEFAULT ''")],
     "orders": [("delivery_zone", "TEXT DEFAULT ''"), ("delivery_fee", "INTEGER DEFAULT 0")],
     "delivery_zones": [("road", "TEXT DEFAULT ''"), ("price", "INTEGER DEFAULT 0")],
 }
@@ -193,9 +193,13 @@ DEFAULT_SETTINGS = {
     "email": "",
     "location": "Nairobi, Kenya",
     "delivery_note": "Countrywide delivery available. Wholesale prices for bulk orders.",
+    "warranty_note": "",   # set in Admin > Settings only if the shop really offers it
+    "wholesale_note": "Buying 2 pieces or more? Talk to us for a wholesale price.",
     "delivery_quote_note": "We will send you the delivery cost on WhatsApp before you pay. "
                            "Delivery is to your nearest courier office or bus stage.",
 }
+
+BADGES = ["", "Best seller", "New arrival", "Few left", "Top pick", "Offer"]
 
 ORDER_STATUSES = ["New", "Paid", "Processing", "Delivered", "Cancelled"]
 
@@ -327,6 +331,48 @@ def load_zones(db):
                    (road, name, price, sort))
 
 
+def key_specs(p):
+    """Short spec table for the product page, read from the name and description."""
+    name = p["name"] or ""
+    text = f"{name} {p['description'] or ''}"
+    low = text.lower()
+    rows = []
+    brand = name.split()[0] if name else ""
+    if brand and brand[0].isupper() and len(brand) > 2:
+        rows.append(("Brand", brand))
+    size = re.search(r'(\d{2})\s*(?:"|inch|-inch)', text)
+    if size:
+        rows.append(("Screen size", size.group(1) + " inches"))
+    for key, label in (("8k", "8K Ultra HD"), ("4k", "4K Ultra HD"),
+                       ("2k", "2K / Full HD"), ("full hd", "Full HD"), ("hd ", "HD")):
+        if key in low:
+            rows.append(("Resolution", label))
+            break
+    for key, label in (("qd-mini led", "QD-Mini LED"), ("mini-qled", "Mini-QLED"),
+                       ("mini led", "Mini LED"), ("qled", "QLED"), ("oled", "OLED"), ("led", "LED")):
+        if key in low:
+            rows.append(("Panel", label))
+            break
+    for key, label in (("google tv", "Google TV"), ("whale os", "Whale OS"),
+                       ("android", "Android TV"), ("smart", "Smart TV")):
+        if key in low:
+            rows.append(("Smart platform", label))
+            break
+    if "144hz" in low:
+        rows.append(("Refresh rate", "144Hz"))
+    elif "120hz" in low:
+        rows.append(("Refresh rate", "120Hz"))
+    if "dolby atmos" in low:
+        rows.append(("Sound", "Dolby Atmos"))
+    elif "dolby audio" in low:
+        rows.append(("Sound", "Dolby Audio"))
+    if "dolby vision" in low:
+        rows.append(("HDR", "Dolby Vision" + (" & HDR10+" if "hdr10+" in low else "")))
+    elif "hdr10" in low:
+        rows.append(("HDR", "HDR10+" if "hdr10+" in low else "HDR10"))
+    return rows
+
+
 def get_zones():
     return get_db().execute("SELECT * FROM delivery_zones ORDER BY sort, id").fetchall()
 
@@ -446,10 +492,43 @@ def shop(slug=None):
     if q:
         where.append("(p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ?)")
         params += [f"%{q}%"] * 3
+    brand = request.args.get("brand", "").strip()
+    size = request.args.get("size", "").strip()
+    budget = request.args.get("budget", "").strip()
+
+    # facets are built from the category/search scope, before the chip filters
+    scope_where, scope_params = list(where), list(params)
+    if brand:
+        where.append("p.name LIKE ?")
+        params.append(brand + " %")
+    if size:
+        where.append("p.name LIKE ?")
+        params.append('%' + size + chr(34) + '%')
+    if budget == "low":
+        where.append("p.price < 25000")
+    elif budget == "mid":
+        where.append("p.price BETWEEN 25000 AND 60000")
+    elif budget == "high":
+        where.append("p.price > 60000")
+
     order = {"price_asc": "p.price ASC", "price_desc": "p.price DESC",
              "new": "p.created_at DESC, p.id DESC"}.get(sort, "p.featured DESC, p.id DESC")
     products = product_query(" AND ".join(where), params, order)
-    return render_template("shop.html", products=products, category=category, q=q, sort=sort)
+
+    brands, sizes = [], []
+    for row in product_query(" AND ".join(scope_where), scope_params, order):
+        first = (row["name"] or "").split()[0] if row["name"] else ""
+        if first and first[0].isupper() and first not in brands:
+            brands.append(first)
+        m = re.search(r'(\d{2})"', row["name"] or "")
+        if m and m.group(1) not in sizes:
+            sizes.append(m.group(1))
+    brands.sort()
+    sizes.sort(key=int)
+    return render_template("shop.html", products=products, category=category, q=q, sort=sort,
+                           brands=brands if len(brands) > 1 else [],
+                           sizes=sizes if len(sizes) > 1 else [],
+                           brand=brand, size=size, budget=budget)
 
 
 @app.route("/product/<slug>")
@@ -462,7 +541,10 @@ def product(slug):
                               (p["id"],)).fetchall()
     related = product_query("p.category_id = ? AND p.id != ?", (p["category_id"], p["id"]), limit=4)
     rates = [z["price"] for z in get_zones() if z["price"]]
+    cheaper = product_query("p.category_id = ? AND p.id != ? AND p.price < ? AND p.in_stock = 1",
+                            (p["category_id"], p["id"], p["price"]), "p.price DESC", limit=4)
     return render_template("product.html", p=p, images=images, related=related,
+                           specs=key_specs(p), cheaper=cheaper,
                            from_fee=min(rates) if rates else 0)
 
 
@@ -645,16 +727,17 @@ def admin_product_form(pid=None):
             flash("Product name and a price above 0 are required.", "error")
         else:
             old_price = to_int(f.get("old_price")) or None
+            badge = f.get("badge", "") if f.get("badge", "") in BADGES else ""
             data = (name, to_int(f.get("category_id")) or None, price, old_price,
                     f.get("description", "").strip(), 1 if f.get("in_stock") else 0,
-                    1 if f.get("featured") else 0)
+                    1 if f.get("featured") else 0, badge)
             if p:
                 db.execute("""UPDATE products SET name=?, category_id=?, price=?, old_price=?, description=?,
-                              in_stock=?, featured=?, slug=? WHERE id=?""",
+                              in_stock=?, featured=?, badge=?, slug=? WHERE id=?""",
                            data + (unique_slug("products", name, pid), pid))
             else:
                 cur = db.execute("""INSERT INTO products(name, category_id, price, old_price, description,
-                                    in_stock, featured, slug) VALUES (?,?,?,?,?,?,?,?)""",
+                                    in_stock, featured, badge, slug) VALUES (?,?,?,?,?,?,?,?,?)""",
                                  data + (unique_slug("products", name),))
                 pid = cur.lastrowid
             start = db.execute("SELECT COALESCE(MAX(sort), -1) + 1 FROM product_images WHERE product_id = ?",
@@ -678,7 +761,7 @@ def admin_product_form(pid=None):
             return redirect(url_for("admin_product_form", pid=pid))
     images = db.execute("SELECT * FROM product_images WHERE product_id = ? ORDER BY sort, id",
                         (pid,)).fetchall() if pid else []
-    return render_template("admin/product_form.html", p=p, images=images,
+    return render_template("admin/product_form.html", p=p, images=images, badges=BADGES,
                            categories=get_categories(), form=request.form)
 
 

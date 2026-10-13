@@ -57,6 +57,11 @@
     <label>Description
       <textarea name="description" rows="7" placeholder="Features, size, warranty… Start a line with • for bullet points.">{{ v.description or '' }}</textarea>
     </label>
+    <label>Label on the photo <small class="muted">optional - shows as a tag on the product card</small>
+      <select name="badge">
+        {% for b in badges %}<option value="{{ b }}" {{ 'selected' if (v.badge or '') == b }}>{{ b or '- none -' }}</option>{% endfor %}
+      </select>
+    </label>
     <div class="switches">
       <label class="switch"><input type="checkbox" name="in_stock" {{ 'checked' if (not p and not form) or v.in_stock }}><span></span> In stock</label>
       <label class="switch"><input type="checkbox" name="featured" {{ 'checked' if v.featured }}><span></span> Show in “Hot Deals”</label>

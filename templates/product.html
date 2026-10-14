@@ -1,7 +1,29 @@
 {% extends "base.html" %}
 {% from "_macros.html" import product_card with context %}
-{% block title %}{{ p.name }} – {{ S.store_name }}{% endblock %}
+{% block title %}{{ p.name }} - {{ p.price | ksh }} | {{ S.store_name }}{% endblock %}
+{% block meta %}{{ meta_desc }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}{{ (images[0].filename if images else None) | img | replace('/static', request.url_root ~ 'static') }}{% endblock %}
 {% block content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ p.name | tojson }},
+  "image": ["{{ request.url_root.rstrip('/') }}{{ (images[0].filename if images else None) | img }}"],
+  "description": {{ (p.description or '') | replace('\u2022', '') | tojson }},
+  {% if p.category_name %}"category": {{ p.category_name | tojson }},{% endif %}
+  "brand": {"@type": "Brand", "name": {{ (p.name.split()[0]) | tojson }}},
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.base_url }}",
+    "priceCurrency": "KES",
+    "price": "{{ p.price }}",
+    "availability": "https://schema.org/{{ 'InStock' if p.in_stock else 'OutOfStock' }}",
+    "seller": {"@type": "Organization", "name": {{ S.store_name | tojson }}}
+  }
+}
+</script>
 <section class="wrap section">
   <nav class="crumbs">
     <a href="{{ url_for('home') }}">Home</a> ›

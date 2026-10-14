@@ -4,7 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ S.store_name }} – Wholesale Home Appliances & Electronics{% endblock %}</title>
-  <meta name="description" content="{{ S.store_name }}: wholesale home appliances, electronics and salon equipment in Kenya. Call {{ S.phone1 }}.">
+  <meta name="description" content="{% block meta %}{{ S.store_name }}: wholesale TVs, home appliances and salon equipment in Kenya - Skyworth, TCL, Vitron and more. Countrywide delivery, pay by M-Pesa. Call {{ S.phone1 }}.{% endblock %}">
+  <link rel="canonical" href="{{ request.base_url }}">
+  <meta property="og:site_name" content="{{ S.store_name }}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+  <meta property="og:description" content="{{ self.meta() }}">
+  <meta property="og:url" content="{{ request.base_url }}">
+  <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='img/logo-share.png', _external=True) }}{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "{{ S.store_name }}",
+    "image": "{{ url_for('static', filename='img/logo.png', _external=True) }}",
+    "url": "{{ request.url_root }}",
+    "telephone": "{{ tel(S.phone1) }}",
+    "address": {"@type": "PostalAddress", "addressLocality": "{{ S.location }}", "addressCountry": "KE"},
+    "priceRange": "KSh",
+    "paymentAccepted": "M-Pesa, Cash"
+  }
+  </script>
   <meta name="theme-color" content="#3d0a14">
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">

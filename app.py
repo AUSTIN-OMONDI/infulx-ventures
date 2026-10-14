@@ -8,7 +8,7 @@ from datetime import datetime
 from functools import wraps
 from urllib.parse import quote
 
-from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
+from flask import (Flask, Response, abort, flash, g, jsonify, redirect, render_template,
                    request, session, url_for)
 from PIL import Image, ImageOps
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -462,8 +462,10 @@ def product(slug):
                               (p["id"],)).fetchall()
     related = product_query("p.category_id = ? AND p.id != ?", (p["category_id"], p["id"]), limit=4)
     rates = [z["price"] for z in get_zones() if z["price"]]
+    bullets = [b.strip().lstrip("\u2022").strip() for b in (p["description"] or "").splitlines()]
+    meta = f"{p['name']} at {ksh(p['price'])}. " + ", ".join([b for b in bullets if b][:3])
     return render_template("product.html", p=p, images=images, related=related,
-                           from_fee=min(rates) if rates else 0)
+                           meta_desc=meta[:300], from_fee=min(rates) if rates else 0)
 
 
 @app.route("/cart")
@@ -886,6 +888,31 @@ def admin_settings():
             flash("Store settings saved.", "success")
         return redirect(url_for("admin_settings"))
     return render_template("admin/settings.html")
+
+
+@app.route("/robots.txt")
+def robots():
+    lines = ["User-agent: *", "Disallow: /admin", "Disallow: /cart", "Disallow: /order/",
+             "", f"Sitemap: {request.url_root}sitemap.xml"]
+    return Response("\n".join(lines), mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    """Every public page, so Google can find all products."""
+    db = get_db()
+    urls = [(url_for("home", _external=True), "1.0"), (url_for("shop", _external=True), "0.9")]
+    for c in db.execute("SELECT slug FROM categories"):
+        urls.append((url_for("shop", slug=c["slug"], _external=True), "0.8"))
+    for pr in db.execute("SELECT slug FROM products WHERE in_stock = 1"):
+        urls.append((url_for("product", slug=pr["slug"], _external=True), "0.7"))
+    today = datetime.now().strftime("%Y-%m-%d")
+    body = ['<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for loc, prio in urls:
+        body.append(f"<url><loc>{loc}</loc><lastmod>{today}</lastmod><priority>{prio}</priority></url>")
+    body.append("</urlset>")
+    return Response("\n".join(body), mimetype="application/xml")
 
 
 @app.errorhandler(404)

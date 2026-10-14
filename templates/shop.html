@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import product_card with context %}
-{% block title %}{{ category.name if category else ('Search: ' ~ q if q else 'Shop') }} – {{ S.store_name }}{% endblock %}
+{% block title %}{% if category %}{{ category.name }} in Kenya - prices & delivery{% elif q %}Search: {{ q }}{% else %}Shop all products{% endif %} | {{ S.store_name }}{% endblock %}
+{% block meta %}{% if category %}Buy {{ category.name | lower }} in Kenya from {{ S.store_name }} - {{ products | length }} items with prices, countrywide delivery and M-Pesa payment. Call {{ S.phone1 }}.{% else %}Shop TVs, home appliances and salon equipment in Kenya. Countrywide delivery, pay by M-Pesa. Call {{ S.phone1 }}.{% endif %}{% endblock %}
 {% block content %}
 <section class="wrap section">
   <div class="shop-head">

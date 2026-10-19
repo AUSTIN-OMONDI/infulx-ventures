@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 static/uploads/*
 !static/uploads/.gitkeep
+stderr.log
+tmp/
+public/

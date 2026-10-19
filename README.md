@@ -38,7 +38,9 @@ generated on first run, printed in the console and saved to `data/admin_password
 
 ## Deploying
 
-For a free Oracle Cloud server with your own domain, follow **deploy/README.md**.
+The site is live at **https://influxventures.co.ke**, on Truehost shared hosting
+(cPanel + Passenger). **deploy/truehost.md** describes that setup and how to
+update it. For a self-managed Oracle Cloud server instead, see **deploy/README.md**.
 
 
 The site runs on any host that supports Python, such as PythonAnywhere, a VPS or Render. For example:
